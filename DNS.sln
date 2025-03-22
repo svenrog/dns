@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.35906.104
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C976F0F8-3743-4BBD-8A7C-53660F2C7B72}"
 EndProject
@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DNS", "DNS", "{51F9AEF6-950
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNS", "DNS\DNS.csproj", "{0F7004C7-BF98-49D4-8362-FC480E043256}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C158CC76-DE88-455A-B6A8-0E334CB47128}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNS.Tests", "Tests\DNS.Tests.csproj", "{C158CC76-DE88-455A-B6A8-0E334CB47128}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "Examples\Examples.csproj", "{C3C1DADD-2F85-4B9B-8CE5-EAA87EFC5C67}"
 EndProject
@@ -53,5 +53,8 @@ Global
 		{0F7004C7-BF98-49D4-8362-FC480E043256} = {51F9AEF6-9501-46D2-B4DB-481D8B649866}
 		{C158CC76-DE88-455A-B6A8-0E334CB47128} = {C976F0F8-3743-4BBD-8A7C-53660F2C7B72}
 		{C3C1DADD-2F85-4B9B-8CE5-EAA87EFC5C67} = {51F9AEF6-9501-46D2-B4DB-481D8B649866}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AA98E6E9-2074-4BEA-A357-30299A9FC212}
 	EndGlobalSection
 EndGlobal

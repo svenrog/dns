@@ -1,12 +1,10 @@
 ﻿using System;
 
-namespace DNS.Protocol.Marshalling {
+namespace DNS.Protocol.Marshalling
+{
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Struct)]
-    public class EndianAttribute : Attribute {
-        public EndianAttribute(Endianness endianness) {
-            this.Endianness = endianness;
-        }
-
-        public Endianness Endianness { get; }
+    public class EndianAttribute(Endianness endianness) : Attribute
+    {
+        public Endianness Endianness { get; } = endianness;
     }
 }

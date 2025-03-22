@@ -7,9 +7,8 @@ namespace DNS.Tests.Protocol {
     public class ParseQuestionTest {
         [Fact]
         public void BasicQuestionWithEmptyDomain() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Question", "empty-domain_basic");
-            Question question = Question.FromArray(content, 0, out endOffset);
+            Question question = Question.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("", question.Name.ToString());
             Assert.Equal(RecordType.A, question.Type);
@@ -20,9 +19,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void BasicQuestionWithMultipleLabelDomain() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Question", "www.google.com_basic");
-            Question question = Question.FromArray(content, 0, out endOffset);
+            Question question = Question.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("www.google.com", question.Name.ToString());
             Assert.Equal(RecordType.A, question.Type);
@@ -33,9 +31,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void CNameQuestionWithEmptyDomain() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Question", "empty-domain_cname");
-            Question question = Question.FromArray(content, 0, out endOffset);
+            Question question = Question.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("", question.Name.ToString());
             Assert.Equal(RecordType.CNAME, question.Type);
@@ -46,9 +43,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void AnyQuestionWithEmptyDomain() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Question", "empty-domain_any");
-            Question question = Question.FromArray(content, 0, out endOffset);
+            Question question = Question.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("", question.Name.ToString());
             Assert.Equal(RecordType.A, question.Type);
@@ -59,9 +55,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void AllSetQuestionWithMultipleLabelDomains() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Question", "www.google.com_all");
-            Question question = Question.FromArray(content, 0, out endOffset);
+            Question question = Question.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("www.google.com", question.Name.ToString());
             Assert.Equal(RecordType.CNAME, question.Type);
@@ -72,9 +67,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void MultipleQuestions() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Question", "multiple");
-            IList<Question> questions = Question.GetAllFromArray(content, 0, 3, out endOffset);
+            IList<Question> questions = Question.GetAllFromArray(content, 0, 3, out int endOffset);
 
             Assert.Equal(3, questions.Count);
             Assert.Equal(36, endOffset);

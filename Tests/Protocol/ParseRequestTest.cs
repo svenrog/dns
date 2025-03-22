@@ -14,7 +14,7 @@ namespace DNS.Tests.Protocol {
             Assert.Equal(0, request.Id);
             Assert.False(request.RecursionDesired);
             Assert.Equal(17, request.Size);
-            Assert.Equal(1, request.Questions.Count);
+            Assert.Single(request.Questions);
 
             Question question = request.Questions[0];
 
@@ -32,7 +32,7 @@ namespace DNS.Tests.Protocol {
             Assert.Equal(1, request.Id);
             Assert.True(request.RecursionDesired);
             Assert.Equal(32, request.Size);
-            Assert.Equal(1, request.Questions.Count);
+            Assert.Single(request.Questions);
 
             Question question = request.Questions[0];
 
@@ -74,8 +74,8 @@ namespace DNS.Tests.Protocol {
             Assert.Equal(11772, request.Id);
             Assert.True(request.RecursionDesired);
             Assert.Equal(39, request.Size);
-            Assert.Equal(1, request.Questions.Count);
-            Assert.Equal(1, request.AdditionalRecords.Count);
+            Assert.Single(request.Questions);
+            Assert.Single(request.AdditionalRecords);
 
             Question question = request.Questions[0];
 

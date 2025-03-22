@@ -17,11 +17,11 @@ namespace DNS.Tests.Server {
         [InlineData(RecordType.ANY, "google.com")]
         [InlineData(RecordType.ANY, "gooGLE.com")]
         public async Task ResolveRecord(RecordType recordType, string domain) {
-            MasterFile masterFile = new MasterFile();
+            MasterFile masterFile = new();
             masterFile.AddIPAddressResourceRecord("google.com", "192.168.0.1");
 
             IRequest clientRequest = new Request();
-            Question clientRequestQuestion = new Question(new Domain(domain), recordType);
+            Question clientRequestQuestion = new(new Domain(domain), recordType);
 
             clientRequest.Id = 1;
             clientRequest.Questions.Add(clientRequestQuestion);
@@ -30,10 +30,10 @@ namespace DNS.Tests.Server {
             IResponse clientResponse = await masterFile.Resolve(clientRequest);
 
             Assert.Equal(1, clientResponse.Id);
-            Assert.Equal(1, clientResponse.Questions.Count);
-            Assert.Equal(1, clientResponse.AnswerRecords.Count);
-            Assert.Equal(0, clientResponse.AuthorityRecords.Count);
-            Assert.Equal(0, clientResponse.AdditionalRecords.Count);
+            Assert.Single(clientResponse.Questions);
+            Assert.Single(clientResponse.AnswerRecords);
+            Assert.Empty(clientResponse.AuthorityRecords);
+            Assert.Empty(clientResponse.AdditionalRecords);
 
             Question clientResponseQuestion = clientResponse.Questions[0];
 

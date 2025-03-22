@@ -1,0 +1,7 @@
+﻿[*.cs]
+
+# IDE0011: Add braces
+csharp_prefer_braces = false
+
+# IDE0290: Use primary constructor
+csharp_style_prefer_primary_constructors = false

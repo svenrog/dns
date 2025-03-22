@@ -1,100 +1,120 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using DNS.Protocol;
+﻿using DNS.Protocol;
 using DNS.Protocol.ResourceRecords;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
-namespace DNS.Client {
-    public class ClientResponse : IResponse {
-        private IResponse response;
-        private byte[] message;
+namespace DNS.Client
+{
+    public class ClientResponse : IResponse
+    {
+        private readonly IResponse _response;
+        private readonly byte[] _message;
 
-        public static ClientResponse FromArray(IRequest request, byte[] message) {
+        public static ClientResponse FromArray(IRequest request, byte[] message)
+        {
             Response response = Response.FromArray(message);
             return new ClientResponse(request, response, message);
         }
 
-        internal ClientResponse(IRequest request, IResponse response, byte[] message) {
+        internal ClientResponse(IRequest request, IResponse response, byte[] message)
+        {
             Request = request;
 
-            this.message = message;
-            this.response = response;
+            _message = message;
+            _response = response;
         }
 
-        internal ClientResponse(IRequest request, IResponse response) {
+        internal ClientResponse(IRequest request, IResponse response)
+        {
             Request = request;
 
-            this.message = response.ToArray();
-            this.response = response;
+            _message = response.ToArray();
+            _response = response;
         }
 
         public IRequest Request { get; }
 
-        public int Id {
-            get { return response.Id; }
+        public int Id
+        {
+            get => _response.Id;
             set { }
         }
 
-        public IList<IResourceRecord> AnswerRecords {
-            get { return response.AnswerRecords; }
+        public IList<IResourceRecord> AnswerRecords
+        {
+            get { return _response.AnswerRecords; }
         }
 
-        public IList<IResourceRecord> AuthorityRecords {
-            get { return new ReadOnlyCollection<IResourceRecord>(response.AuthorityRecords); }
+        public IList<IResourceRecord> AuthorityRecords
+        {
+            get { return new ReadOnlyCollection<IResourceRecord>(_response.AuthorityRecords); }
         }
 
-        public IList<IResourceRecord> AdditionalRecords {
-            get { return new ReadOnlyCollection<IResourceRecord>(response.AdditionalRecords); }
+        public IList<IResourceRecord> AdditionalRecords
+        {
+            get { return new ReadOnlyCollection<IResourceRecord>(_response.AdditionalRecords); }
         }
 
-        public bool RecursionAvailable {
-            get { return response.RecursionAvailable; }
+        public bool RecursionAvailable
+        {
+            get => _response.RecursionAvailable;
             set { }
         }
 
-        public bool AuthenticData {
-            get { return response.AuthenticData; }
+        public bool AuthenticData
+        {
+            get => _response.AuthenticData;
             set { }
         }
 
-        public bool CheckingDisabled {
-            get { return response.CheckingDisabled; }
+        public bool CheckingDisabled
+        {
+            get => _response.CheckingDisabled;
             set { }
         }
 
-        public bool AuthorativeServer {
-            get { return response.AuthorativeServer; }
+        public bool AuthorativeServer
+        {
+            get => _response.AuthorativeServer;
             set { }
         }
 
-        public bool Truncated {
-            get { return response.Truncated; }
+        public bool Truncated
+        {
+            get => _response.Truncated;
             set { }
         }
 
-        public OperationCode OperationCode {
-            get { return response.OperationCode; }
+        public OperationCode OperationCode
+        {
+            get => _response.OperationCode;
             set { }
         }
 
-        public ResponseCode ResponseCode {
-            get { return response.ResponseCode; }
+        public ResponseCode ResponseCode
+        {
+            get => _response.ResponseCode;
             set { }
         }
 
-        public IList<Question> Questions {
-            get { return new ReadOnlyCollection<Question>(response.Questions); }
+        public IList<Question> Questions
+        {
+            get { return new ReadOnlyCollection<Question>(_response.Questions); }
         }
 
-        public int Size {
-            get { return message.Length; }
+        public int Size
+        {
+            get { return _message.Length; }
         }
 
-        public byte[] ToArray() {
-            return message;
+        public byte[] ToArray()
+        {
+            return _message;
         }
 
-        public override string ToString() {
-            return response.ToString();
+        public override string ToString()
+        {
+            return _response.ToString();
         }
     }
 }

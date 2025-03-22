@@ -1,17 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
+﻿using DNS.Protocol.Marshalling;
+using DNS.Protocol.Serialization;
 using DNS.Protocol.Utils;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace DNS.Protocol {
-    public class Question : IMessageEntry {
-        public static IList<Question> GetAllFromArray(byte[] message, int offset, int questionCount) {
-            return GetAllFromArray(message, offset, questionCount, out offset);
+namespace DNS.Protocol
+{
+    public class Question : IMessageEntry
+    {
+        public static IList<Question> GetAllFromArray(byte[] message, int offset, int questionCount)
+        {
+            return GetAllFromArray(message, offset, questionCount, out _);
         }
 
-        public static IList<Question> GetAllFromArray(byte[] message, int offset, int questionCount, out int endOffset) {
-            IList<Question> questions = new List<Question>(questionCount);
+        public static IList<Question> GetAllFromArray(byte[] message, int offset, int questionCount, out int endOffset)
+        {
+            List<Question> questions = new(questionCount);
 
-            for (int i = 0; i < questionCount; i++) {
+            for (int i = 0; i < questionCount; i++)
+            {
                 questions.Add(FromArray(message, offset, out offset));
             }
 
@@ -19,77 +28,87 @@ namespace DNS.Protocol {
             return questions;
         }
 
-        public static Question FromArray(byte[] message, int offset) {
-            return FromArray(message, offset, out offset);
+        public static Question FromArray(byte[] message, int offset)
+        {
+            return FromArray(message, offset, out _);
         }
 
-        public static Question FromArray(byte[] message, int offset, out int endOffset) {
+        public static Question FromArray(byte[] message, int offset, out int endOffset)
+        {
             Domain domain = Domain.FromArray(message, offset, out offset);
-            Tail tail = Marshalling.Struct.GetStruct<Tail>(message, offset, Tail.SIZE);
+            Tail tail = Struct.GetStruct<Tail>(message, offset, Tail.SIZE);
 
             endOffset = offset + Tail.SIZE;
 
             return new Question(domain, tail.Type, tail.Class);
         }
 
-        private Domain domain;
-        private RecordType type;
-        private RecordClass klass;
+        private readonly Domain _domain;
+        private readonly RecordType _type;
+        private readonly RecordClass _class;
 
-        public Question(Domain domain, RecordType type = RecordType.A, RecordClass klass = RecordClass.IN) {
-            this.domain = domain;
-            this.type = type;
-            this.klass = klass;
+        public Question(Domain domain, RecordType type = RecordType.A, RecordClass @class = RecordClass.IN)
+        {
+            _domain = domain;
+            _type = type;
+            _class = @class;
         }
 
-        public Domain Name {
-            get { return domain; }
+        public Domain Name
+        {
+            get { return _domain; }
         }
 
-        public RecordType Type {
-            get { return type; }
+        public RecordType Type
+        {
+            get { return _type; }
         }
 
-        public RecordClass Class {
-            get { return klass; }
+        public RecordClass Class
+        {
+            get { return _class; }
         }
 
-        public int Size {
-            get { return domain.Size + Tail.SIZE; }
+        [JsonIgnore]
+        public int Size
+        {
+            get { return _domain.Size + Tail.SIZE; }
         }
 
-        public byte[] ToArray() {
-            ByteStream result = new ByteStream(Size);
+
+        public byte[] ToArray()
+        {
+            ByteStream result = new(Size);
 
             result
-                .Append(domain.ToArray())
-                .Append(Marshalling.Struct.GetBytes(new Tail { Type = Type, Class = Class }));
+                .Append(_domain.ToArray())
+                .Append(Struct.GetBytes(new Tail { Type = Type, Class = Class }));
 
             return result.ToArray();
         }
 
-        public override string ToString() {
-            return ObjectStringifier.New(this)
-                .Add(nameof(Name), nameof(Type), nameof(Class))
-                .ToString();
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this, StringifierContext.Default.Question);
         }
 
-        [Marshalling.Endian(Marshalling.Endianness.Big)]
+        [Endian(Endianness.Big)]
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        private struct Tail {
+        private struct Tail
+        {
             public const int SIZE = 4;
 
-            private ushort type;
-            private ushort klass;
+            private ushort _type;
+            private ushort _class;
 
-            public RecordType Type {
-                get { return (RecordType) type; }
-                set { type = (ushort) value; }
+            public RecordType Type
+            {
+                readonly get => (RecordType)_type; set => _type = (ushort)value;
             }
 
-            public RecordClass Class {
-                get { return (RecordClass) klass; }
-                set { klass = (ushort) value; }
+            public RecordClass Class
+            {
+                readonly get => (RecordClass)_class; set => _class = (ushort)value;
             }
         }
     }

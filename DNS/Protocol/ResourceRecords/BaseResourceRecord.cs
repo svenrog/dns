@@ -1,49 +1,51 @@
 ﻿using System;
-using DNS.Protocol.Utils;
+using System.Text.Json.Serialization;
 
-namespace DNS.Protocol.ResourceRecords {
-    public abstract class BaseResourceRecord : IResourceRecord {
-        private IResourceRecord record;
+namespace DNS.Protocol.ResourceRecords
+{
+    public abstract class BaseResourceRecord(IResourceRecord record) : IResourceRecord
+    {
+        private readonly IResourceRecord _record = record;
 
-        public BaseResourceRecord(IResourceRecord record) {
-            this.record = record;
+        public Domain Name
+        {
+            get { return _record.Name; }
         }
 
-        public Domain Name {
-            get { return record.Name; }
+        public RecordType Type
+        {
+            get { return _record.Type; }
         }
 
-        public RecordType Type {
-            get { return record.Type; }
+        public RecordClass Class
+        {
+            get { return _record.Class; }
         }
 
-        public RecordClass Class {
-            get { return record.Class; }
+        public TimeSpan TimeToLive
+        {
+            get { return _record.TimeToLive; }
         }
 
-        public TimeSpan TimeToLive {
-            get { return record.TimeToLive; }
+        public int DataLength
+        {
+            get { return _record.DataLength; }
         }
 
-        public int DataLength {
-            get { return record.DataLength; }
+        public byte[] Data
+        {
+            get { return _record.Data; }
         }
 
-        public byte[] Data {
-            get { return record.Data; }
+        [JsonIgnore]
+        public int Size
+        {
+            get { return _record.Size; }
         }
 
-        public int Size {
-            get { return record.Size; }
-        }
-
-        public byte[] ToArray() {
-            return record.ToArray();
-        }
-
-        internal ObjectStringifier Stringify() {
-            return ObjectStringifier.New(this)
-                .Add(nameof(Name), nameof(Type), nameof(Class), nameof(TimeToLive), nameof(DataLength));
+        public byte[] ToArray()
+        {
+            return _record.ToArray();
         }
     }
 }

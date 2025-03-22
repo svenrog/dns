@@ -1,17 +1,20 @@
+using DNS.Protocol.Utils;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using DNS.Protocol.Utils;
 
-namespace DNS.Tests.Utils {
+namespace DNS.Tests.Utils
+{
 
-    public class TaskExtensionsTest {
+    public class TaskExtensionsTest
+    {
         [Fact]
-        public async Task WithoutCancellation() {
-            object obj = new object();
-            CancellationTokenSource cts = new CancellationTokenSource();
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+        public async Task WithoutCancellation()
+        {
+            object obj = new();
+            using CancellationTokenSource cts = new();
+            TaskCompletionSource<object> tcs = new();
             Task<object> resultTask = tcs.Task.WithCancellation(cts.Token);
 
             tcs.SetResult(obj);
@@ -21,9 +24,10 @@ namespace DNS.Tests.Utils {
         }
 
         [Fact]
-        public async Task WithCancellation() {
-            CancellationTokenSource cts = new CancellationTokenSource();
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+        public async Task WithCancellation()
+        {
+            CancellationTokenSource cts = new();
+            TaskCompletionSource<object> tcs = new();
             Task resultTask = tcs.Task.WithCancellation(cts.Token);
 
             cts.Cancel();
@@ -34,9 +38,10 @@ namespace DNS.Tests.Utils {
         }
 
         [Fact]
-        public async Task WithoutCancellationTimeout() {
-            object obj = new object();
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+        public async Task WithoutCancellationTimeout()
+        {
+            object obj = new();
+            TaskCompletionSource<object> tcs = new();
             Task<object> resultTask = tcs.Task.WithCancellationTimeout(TimeSpan.FromMilliseconds(60000));
 
             tcs.SetResult(obj);
@@ -46,9 +51,10 @@ namespace DNS.Tests.Utils {
         }
 
         [Fact(Timeout = 30000)]
-        public async Task WithoutCancellationTimeoutAndCancellationToken() {
-            CancellationTokenSource cts = new CancellationTokenSource();
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+        public async Task WithoutCancellationTimeoutAndCancellationToken()
+        {
+            CancellationTokenSource cts = new();
+            TaskCompletionSource<object> tcs = new();
             Task<object> resultTask = tcs.Task.WithCancellationTimeout(TimeSpan.FromMilliseconds(60000), cts.Token);
 
             cts.Cancel();
@@ -57,8 +63,9 @@ namespace DNS.Tests.Utils {
         }
 
         [Fact]
-        public async Task WithCancellationTimeout() {
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+        public async Task WithCancellationTimeout()
+        {
+            TaskCompletionSource<object> tcs = new();
             Task resultTask = tcs.Task.WithCancellationTimeout(TimeSpan.FromMilliseconds(100));
 
             await Assert.ThrowsAsync<OperationCanceledException>(() => resultTask);

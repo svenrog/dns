@@ -1,19 +1,23 @@
-﻿using System;
-using System.Threading.Tasks;
-using DNS.Client;
+﻿using DNS.Client;
 using DNS.Server;
+using System;
+using System.Threading.Tasks;
 
-namespace Examples.ClientServer {
-    class ClientServerExample {
-        private const int PORT = 53535;
+namespace Examples.ClientServer
+{
+    static class ClientServerExample
+    {
+        private const int _port = 53535;
 
-        public static void Main(string[] args) {
+        public static void Main()
+        {
             MainAsync().Wait();
         }
 
-        public async static Task MainAsync() {
-            MasterFile masterFile = new MasterFile();
-            DnsServer server = new DnsServer(masterFile, "8.8.8.8");
+        public async static Task MainAsync()
+        {
+            MasterFile masterFile = new();
+            DnsServer server = new(masterFile, "8.8.8.8");
 
             masterFile.AddIPAddressResourceRecord("google.com", "127.0.0.1");
 
@@ -22,8 +26,9 @@ namespace Examples.ClientServer {
             server.Errored += (sender, e) => Console.WriteLine("Errored: {0}", e.Exception.Message);
             server.Listening += (sender, e) => Console.WriteLine("Listening");
 
-            server.Listening += async (sender, e) => {
-                DnsClient client = new DnsClient("127.0.0.1", PORT);
+            server.Listening += async (sender, e) =>
+            {
+                DnsClient client = new("127.0.0.1", _port);
 
                 await client.Lookup("google.com").ConfigureAwait(false);
                 await client.Lookup("cnn.com").ConfigureAwait(false);
@@ -31,7 +36,7 @@ namespace Examples.ClientServer {
                 server.Dispose();
             };
 
-            await server.Listen(PORT).ConfigureAwait(false);
+            await server.Listen(_port).ConfigureAwait(false);
         }
     }
 }

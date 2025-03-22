@@ -1,192 +1,196 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using DNS.Protocol.Marshalling;
+using DNS.Protocol.Serialization;
 using DNS.Protocol.Utils;
+using System;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 
-namespace DNS.Protocol {
+namespace DNS.Protocol
+{
     // 12 bytes message header
-    [Marshalling.Endian(Marshalling.Endianness.Big)]
+    [Endian(Endianness.Big)]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct Header {
+    public struct Header
+    {
         public const int SIZE = 12;
 
-        public static Header FromArray(byte[] header) {
-            if (header.Length < SIZE) {
+        public static Header FromArray(byte[] header)
+        {
+            if (header.Length < SIZE)
+            {
                 throw new ArgumentException("Header length too small");
             }
 
-            return Marshalling.Struct.GetStruct<Header>(header, 0, SIZE);
+            return Struct.GetStruct<Header>(header, 0, SIZE);
         }
 
-        private ushort id;
+        private ushort _id;
 
-        private byte flag0;
-        private byte flag1;
+        private byte _flag0;
+        private byte _flag1;
 
         // Question count: number of questions in the Question section
-        private ushort qdCount;
+        private ushort _qdCount;
 
         // Answer record count: number of records in the Answer section
-        private ushort anCount;
+        private ushort _anCount;
 
         // Authority record count: number of records in the Authority section
-        private ushort nsCount;
+        private ushort _nsCount;
 
         // Additional record count: number of records in the Additional section
-        private ushort arCount;
+        private ushort _arCount;
 
-        public int Id {
-            get { return id; }
-            set { id = (ushort) value; }
+        public int Id
+        {
+            readonly get => _id; set => _id = (ushort)value;
         }
 
-        public int QuestionCount {
-            get { return qdCount; }
-            set { qdCount = (ushort) value; }
+        public int QuestionCount
+        {
+            readonly get => _qdCount; set => _qdCount = (ushort)value;
         }
 
-        public int AnswerRecordCount {
-            get { return anCount; }
-            set { anCount = (ushort) value; }
+        public int AnswerRecordCount
+        {
+            readonly get => _anCount; set => _anCount = (ushort)value;
         }
 
-        public int AuthorityRecordCount {
-            get { return nsCount; }
-            set { nsCount = (ushort) value; }
+        public int AuthorityRecordCount
+        {
+            readonly get => _nsCount; set => _nsCount = (ushort)value;
         }
 
-        public int AdditionalRecordCount {
-            get { return arCount; }
-            set { arCount = (ushort) value; }
+        public int AdditionalRecordCount
+        {
+            readonly get => _arCount; set => _arCount = (ushort)value;
         }
 
-        public bool Response {
-            get { return Qr == 1; }
-            set { Qr = Convert.ToByte(value); }
+        public bool Response
+        {
+            readonly get => Qr == 1; set => Qr = Convert.ToByte(value);
         }
 
-        public OperationCode OperationCode {
-            get { return (OperationCode) Opcode; }
-            set { Opcode = (byte) value; }
+        public OperationCode OperationCode
+        {
+            readonly get => (OperationCode)Opcode; set => Opcode = (byte)value;
         }
 
-        public bool AuthorativeServer {
-            get { return Aa == 1; }
-            set { Aa = Convert.ToByte(value); }
+        public bool AuthorativeServer
+        {
+            readonly get => Aa == 1; set => Aa = Convert.ToByte(value);
         }
 
-        public bool Truncated {
-            get { return Tc == 1; }
-            set { Tc = Convert.ToByte(value); }
+        public bool Truncated
+        {
+            readonly get => Tc == 1; set => Tc = Convert.ToByte(value);
         }
 
-        public bool RecursionDesired {
-            get { return Rd == 1; }
-            set { Rd = Convert.ToByte(value); }
+        public bool RecursionDesired
+        {
+            readonly get => Rd == 1; set => Rd = Convert.ToByte(value);
         }
 
-        public bool RecursionAvailable {
-            get { return Ra == 1; }
-            set { Ra = Convert.ToByte(value); }
+        public bool RecursionAvailable
+        {
+            readonly get => Ra == 1; set => Ra = Convert.ToByte(value);
         }
 
-        public bool AuthenticData {
-            get { return Ad == 1; }
-            set { Ad = Convert.ToByte(value); }
+        public bool AuthenticData
+        {
+            readonly get => Ad == 1; set => Ad = Convert.ToByte(value);
         }
 
-        public bool CheckingDisabled {
-            get { return Cd == 1; }
-            set { Cd = Convert.ToByte(value); }
+        public bool CheckingDisabled
+        {
+            readonly get => Cd == 1; set => Cd = Convert.ToByte(value);
         }
 
-        public ResponseCode ResponseCode {
-            get { return (ResponseCode) RCode; }
-            set { RCode = (byte) value; }
+        public ResponseCode ResponseCode
+        {
+            readonly get => (ResponseCode)RCode; set => RCode = (byte)value;
         }
 
-        public int Size {
-            get { return Header.SIZE; }
+        public readonly byte[] ToArray()
+        {
+            return Struct.GetBytes(this);
         }
 
-        public byte[] ToArray() {
-            return Marshalling.Struct.GetBytes(this);
-        }
-
-        public override string ToString() {
-            return ObjectStringifier.New(this)
-                .AddAll()
-                .Remove(nameof(Size))
-                .ToString();
+        public override readonly string ToString()
+        {
+            return JsonSerializer.Serialize(this, StringifierContext.Default.Header);
         }
 
         // Query/Response Flag
-        private byte Qr {
-            get { return Flag0.GetBitValueAt(7, 1); }
-            set { Flag0 = Flag0.SetBitValueAt(7, 1, value); }
+        private byte Qr
+        {
+            readonly get => Flag0.GetBitValueAt(7, 1); set => Flag0 = Flag0.SetBitValueAt(7, 1, value);
         }
 
         // Operation Code
-        private byte Opcode {
-            get { return Flag0.GetBitValueAt(3, 4); }
-            set { Flag0 = Flag0.SetBitValueAt(3, 4, value); }
+        private byte Opcode
+        {
+            readonly get => Flag0.GetBitValueAt(3, 4); set => Flag0 = Flag0.SetBitValueAt(3, 4, value);
         }
 
         // Authorative Answer Flag
-        private byte Aa {
-            get { return Flag0.GetBitValueAt(2, 1); }
-            set { Flag0 = Flag0.SetBitValueAt(2, 1, value); }
+        private byte Aa
+        {
+            readonly get => Flag0.GetBitValueAt(2, 1); set => Flag0 = Flag0.SetBitValueAt(2, 1, value);
         }
 
         // Truncation Flag
-        private byte Tc {
-            get { return Flag0.GetBitValueAt(1, 1); }
-            set { Flag0 = Flag0.SetBitValueAt(1, 1, value); }
+        private byte Tc
+        {
+            readonly get => Flag0.GetBitValueAt(1, 1); set => Flag0 = Flag0.SetBitValueAt(1, 1, value);
         }
 
         // Recursion Desired
-        private byte Rd {
-            get { return Flag0.GetBitValueAt(0, 1); }
-            set { Flag0 = Flag0.SetBitValueAt(0, 1, value); }
+        private byte Rd
+        {
+            readonly get => Flag0.GetBitValueAt(0, 1); set => Flag0 = Flag0.SetBitValueAt(0, 1, value);
         }
 
         // Recursion Available
-        private byte Ra {
-            get { return Flag1.GetBitValueAt(7, 1); }
-            set { Flag1 = Flag1.SetBitValueAt(7, 1, value); }
+        private byte Ra
+        {
+            readonly get => Flag1.GetBitValueAt(7, 1); set => Flag1 = Flag1.SetBitValueAt(7, 1, value);
         }
 
         // Zero (Reserved)
-        private byte Z {
-            get { return Flag1.GetBitValueAt(6, 1); }
-            set { }
+#pragma warning disable S1144 // Unused private types or members should be removed
+        private readonly byte Z
+#pragma warning restore S1144 // Unused private types or members should be removed
+        {
+            get => Flag1.GetBitValueAt(6, 1);
         }
 
         // Authentic Data
-        private byte Ad {
-            get { return Flag1.GetBitValueAt(5, 1); }
-            set { Flag1 = Flag1.SetBitValueAt(5, 1, value); }
+        private byte Ad
+        {
+            readonly get => Flag1.GetBitValueAt(5, 1); set => Flag1 = Flag1.SetBitValueAt(5, 1, value);
         }
 
         // Checking Disabled
-        private byte Cd {
-            get { return Flag1.GetBitValueAt(4, 1); }
-            set { Flag1 = Flag1.SetBitValueAt(4, 1, value); }
+        private byte Cd
+        {
+            readonly get => Flag1.GetBitValueAt(4, 1); set => Flag1 = Flag1.SetBitValueAt(4, 1, value);
         }
 
         // Response Code
-        private byte RCode {
-            get { return Flag1.GetBitValueAt(0, 4); }
-            set { Flag1 = Flag1.SetBitValueAt(0, 4, value); }
+        private byte RCode
+        {
+            readonly get => Flag1.GetBitValueAt(0, 4); set => Flag1 = Flag1.SetBitValueAt(0, 4, value);
         }
 
-        private byte Flag0 {
-            get { return flag0; }
-            set { flag0 = value; }
+        private byte Flag0
+        {
+            readonly get => _flag0; set => _flag0 = value;
         }
 
-        private byte Flag1 {
-            get { return flag1; }
-            set { flag1 = value; }
+        private byte Flag1
+        {
+            readonly get => _flag1; set => _flag1 = value;
         }
     }
 }

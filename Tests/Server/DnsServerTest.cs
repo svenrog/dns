@@ -1,40 +1,47 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Net;
-using System.Net.Sockets;
-using Xunit;
-using DNS.Server;
 using DNS.Client.RequestResolver;
 using DNS.Protocol;
 using DNS.Protocol.ResourceRecords;
+using DNS.Server;
+using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
 
-namespace DNS.Tests.Server {
+namespace DNS.Tests.Server
+{
 
-    public class DnsServerTest {
-        private const int PORT = 64646;
+    public class DnsServerTest
+    {
+        private const int _port = 64646;
 
         [Fact]
-        public async Task ServerLookup() {
-            await Create(new IPAddressRequestResolver(), async server => {
+        public async Task ServerLookup()
+        {
+            await Create(new IPAddressRequestResolver(), async server =>
+            {
                 DnsServer.RequestedEventArgs requestedEvent = null;
                 DnsServer.RespondedEventArgs respondedEvent = null;
                 DnsServer.ErroredEventArgs erroredEvent = null;
 
-                server.Requested += (sender, e) => {
+                server.Requested += (sender, e) =>
+                {
                     requestedEvent = e;
                 };
 
-                server.Responded += (sender, e) => {
+                server.Responded += (sender, e) =>
+                {
                     respondedEvent = e;
                 };
 
-                server.Errored += (sender, e) => {
+                server.Errored += (sender, e) =>
+                {
                     erroredEvent = e;
                 };
 
-                IRequest clientRequest = new Request();
-                Question clientRequestQuestion = new Question(new Domain("google.com"), RecordType.A);
+                Request clientRequest = new();
+                Question clientRequestQuestion = new(new Domain("google.com"), RecordType.A);
 
                 clientRequest.Id = 1;
                 clientRequest.Questions.Add(clientRequestQuestion);
@@ -43,10 +50,10 @@ namespace DNS.Tests.Server {
                 IResponse clientResponse = await Resolve(clientRequest).ConfigureAwait(false);
 
                 Assert.Equal(1, clientResponse.Id);
-                Assert.Equal(1, clientResponse.Questions.Count);
-                Assert.Equal(1, clientResponse.AnswerRecords.Count);
-                Assert.Equal(0, clientResponse.AuthorityRecords.Count);
-                Assert.Equal(0, clientResponse.AdditionalRecords.Count);
+                Assert.Single(clientResponse.Questions);
+                Assert.Single(clientResponse.AnswerRecords);
+                Assert.Empty(clientResponse.AuthorityRecords);
+                Assert.Empty(clientResponse.AdditionalRecords);
 
                 Question clientResponseQuestion = clientResponse.Questions[0];
 
@@ -63,7 +70,7 @@ namespace DNS.Tests.Server {
 
                 Assert.NotNull(requestedEvent.Request);
                 Assert.Equal(1, requestedEvent.Request.Id);
-                Assert.Equal(1, requestedEvent.Request.Questions.Count);
+                Assert.Single(requestedEvent.Request.Questions);
 
                 Question requestedRequestQuestion = requestedEvent.Request.Questions[0];
 
@@ -76,10 +83,10 @@ namespace DNS.Tests.Server {
                 Assert.NotNull(respondedEvent.Response);
 
                 Assert.Equal(1, respondedEvent.Response.Id);
-                Assert.Equal(1, respondedEvent.Response.Questions.Count);
-                Assert.Equal(1, respondedEvent.Response.AnswerRecords.Count);
-                Assert.Equal(0, respondedEvent.Response.AuthorityRecords.Count);
-                Assert.Equal(0, respondedEvent.Response.AdditionalRecords.Count);
+                Assert.Single(respondedEvent.Response.Questions);
+                Assert.Single(respondedEvent.Response.AnswerRecords);
+                Assert.Empty(respondedEvent.Response.AuthorityRecords);
+                Assert.Empty(respondedEvent.Response.AdditionalRecords);
 
                 Question respondedResponseQuestion = respondedEvent.Response.Questions[0];
 
@@ -93,47 +100,59 @@ namespace DNS.Tests.Server {
                 Assert.Equal(RecordType.A, respondedResponseRecord.Type);
 
                 Assert.Null(erroredEvent);
-            }).ConfigureAwait(false);
+            });
         }
 
-        private async static Task Create(IRequestResolver requestResolver, Func<DnsServer, Task> action) {
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-            DnsServer server = new DnsServer(requestResolver);
+        private async static Task Create(IRequestResolver requestResolver, Func<DnsServer, Task> action)
+        {
+            TaskCompletionSource<object> tcs = new();
+            DnsServer server = new(requestResolver);
 
-            server.Listening += async (sender, _) => {
-                try {
+            server.Listening += async (sender, _) =>
+            {
+                try
+                {
                     await action(server).ConfigureAwait(false);
                     tcs.SetResult(null);
-                } catch(Exception e) {
+                }
+                catch (Exception e)
+                {
                     tcs.SetException(e);
-                } finally {
+                }
+                finally
+                {
                     server.Dispose();
                 }
             };
 
-            await Task.WhenAll(server.Listen(PORT), tcs.Task).ConfigureAwait(false);
+            await Task.WhenAll(server.Listen(_port), tcs.Task).ConfigureAwait(false);
         }
 
-        private async static Task<IResponse> Resolve(IRequest request) {
-            using (UdpClient udp = new UdpClient()) {
-                IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), PORT);
+        private async static Task<IResponse> Resolve(Request request)
+        {
+            using UdpClient udp = new();
+            IPEndPoint endPoint = new(IPAddress.Parse("127.0.0.1"), _port);
 
-                await udp.SendAsync(request.ToArray(), request.Size, endPoint).ConfigureAwait(false);
-                UdpReceiveResult result = await udp.ReceiveAsync().ConfigureAwait(false);
-                return Response.FromArray(result.Buffer);
-            }
+            await udp.SendAsync(request.ToArray(), request.Size, endPoint).ConfigureAwait(false);
+            UdpReceiveResult result = await udp.ReceiveAsync().ConfigureAwait(false);
+
+            return Response.FromArray(result.Buffer);
         }
 
-        private class IPAddressRequestResolver : IRequestResolver {
-            public Task<IResponse> Resolve(IRequest request, CancellationToken cancellationToken = default(CancellationToken)) {
-                IResponse response = Response.FromRequest(request);
+        private class IPAddressRequestResolver : IRequestResolver
+        {
+#pragma warning disable S3218 // Inner class members should not shadow outer class "static" or type members
+            public Task<IResponse> Resolve(IRequest request, CancellationToken cancellationToken = default)
+#pragma warning restore S3218 // Inner class members should not shadow outer class "static" or type members
+            {
+                Response response = Response.FromRequest(request);
                 IResourceRecord record = new IPAddressResourceRecord(
                     new Domain("google.com"),
                     IPAddress.Parse("192.168.0.1"));
 
                 response.AnswerRecords.Add(record);
 
-                return Task.FromResult(response);
+                return Task.FromResult<IResponse>(response);
             }
         }
     }

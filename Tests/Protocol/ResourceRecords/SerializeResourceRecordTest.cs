@@ -10,8 +10,8 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         public void BasicResourceRecordWithEmptyDomain() {
             byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_basic");
 
-            Domain domain = new Domain(Helper.GetArray<string>());
-            ResourceRecord record = new ResourceRecord(domain, Helper.GetArray<byte>(),
+            Domain domain = new(Helper.GetArray<string>());
+            ResourceRecord record = new(domain, Helper.GetArray<byte>(),
                 RecordType.A, RecordClass.IN, new TimeSpan(0));
 
             Assert.Equal(content, record.ToArray());
@@ -21,8 +21,8 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         public void BasicResourceRecordWithMultipleLabelDomain() {
             byte[] content = Helper.ReadFixture("ResourceRecord", "www.google.com_basic");
 
-            Domain domain = new Domain(Helper.GetArray("www", "google", "com"));
-            ResourceRecord record = new ResourceRecord(domain, Helper.GetArray<byte>(),
+            Domain domain = new(Helper.GetArray("www", "google", "com"));
+            ResourceRecord record = new(domain, Helper.GetArray<byte>(),
                 RecordType.A, RecordClass.IN, new TimeSpan(0));
 
             Assert.Equal(content, record.ToArray());
@@ -33,8 +33,8 @@ namespace DNS.Tests.Protocol.ResourceRecords {
             byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_data");
 
             byte[] data = Helper.GetArray<byte>(1, 1);
-            Domain domain = new Domain(Helper.GetArray<string>());
-            ResourceRecord record = new ResourceRecord(domain, data,
+            Domain domain = new(Helper.GetArray<string>());
+            ResourceRecord record = new(domain, data,
                 RecordType.A, RecordClass.IN, new TimeSpan());
 
             Assert.Equal(content, record.ToArray());
@@ -44,8 +44,8 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         public void CNameResourceRecordWithEmptyDomain() {
             byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_cname");
 
-            Domain domain = new Domain(Helper.GetArray<string>());
-            ResourceRecord record = new ResourceRecord(domain, Helper.GetArray<byte>(),
+            Domain domain = new(Helper.GetArray<string>());
+            ResourceRecord record = new(domain, Helper.GetArray<byte>(),
                 RecordType.CNAME, RecordClass.IN, new TimeSpan(0));
 
             Assert.Equal(content, record.ToArray());
@@ -55,8 +55,8 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         public void AnyResourceRecordWithEmptyDomain() {
             byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_any");
 
-            Domain domain = new Domain(Helper.GetArray<string>());
-            ResourceRecord record = new ResourceRecord(domain, Helper.GetArray<byte>(),
+            Domain domain = new(Helper.GetArray<string>());
+            ResourceRecord record = new(domain, Helper.GetArray<byte>(),
                 RecordType.A, RecordClass.ANY, new TimeSpan(0));
 
             Assert.Equal(content, record.ToArray());
@@ -66,8 +66,8 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         public void TtlResourceRecordWithEmptyDomain() {
             byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_ttl");
 
-            Domain domain = new Domain(Helper.GetArray<string>());
-            ResourceRecord record = new ResourceRecord(domain, Helper.GetArray<byte>(),
+            Domain domain = new(Helper.GetArray<string>());
+            ResourceRecord record = new(domain, Helper.GetArray<byte>(),
                 RecordType.A, RecordClass.IN, TimeSpan.FromSeconds(1));
 
             Assert.Equal(content, record.ToArray());
@@ -78,8 +78,8 @@ namespace DNS.Tests.Protocol.ResourceRecords {
             byte[] content = Helper.ReadFixture("ResourceRecord", "www.google.com_all");
 
             byte[] data = Helper.GetArray<byte>(1, 1);
-            Domain domain = new Domain(Helper.GetArray("www", "google", "com"));
-            ResourceRecord record = new ResourceRecord(domain, data,
+            Domain domain = new(Helper.GetArray("www", "google", "com"));
+            ResourceRecord record = new(domain, data,
                 RecordType.CNAME, RecordClass.ANY, TimeSpan.FromSeconds(1));
 
             Assert.Equal(content, record.ToArray());
@@ -89,9 +89,9 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         public void SrvResourceRecordWithEmptyDomain() {
             byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_srv");
 
-            Domain domain = new Domain(Helper.GetArray<string>());
-            Domain target = new Domain(Helper.GetArray("example", "com"));
-            ServiceResourceRecord srv = new ServiceResourceRecord(domain, 10, 60, 8080, target, new TimeSpan(0));
+            Domain domain = new(Helper.GetArray<string>());
+            Domain target = new(Helper.GetArray("example", "com"));
+            ServiceResourceRecord srv = new(domain, 10, 60, 8080, target, new TimeSpan(0));
 
             Assert.Equal(content, srv.ToArray());
         }

@@ -1,122 +1,140 @@
-﻿using System;
+﻿using DNS.Protocol.ResourceRecords;
+using DNS.Protocol.Serialization;
+using DNS.Protocol.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using DNS.Protocol.Utils;
-using DNS.Protocol.ResourceRecords;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace DNS.Protocol {
-    public class Request : IRequest {
-        private static readonly RandomNumberGenerator RANDOM = new RNGCryptoServiceProvider();
+namespace DNS.Protocol
+{
+    public class Request : IRequest
+    {
+        private static readonly RandomNumberGenerator _random = RandomNumberGenerator.Create();
 
-        private IList<Question> questions;
-        private Header header;
-        private IList<IResourceRecord> additional;
+        private Header _header;
+        private readonly IList<Question> _questions;
 
-        public static Request FromArray(byte[] message) {
+        private readonly IList<IResourceRecord> _additional;
+
+        public static Request FromArray(byte[] message)
+        {
             Header header = Header.FromArray(message);
-            int offset = header.Size;
+            int offset = Header.SIZE;
 
             if (header.Response || header.QuestionCount == 0 ||
                     header.AnswerRecordCount + header.AuthorityRecordCount > 0 ||
-                    header.ResponseCode != ResponseCode.NoError) {
+                    header.ResponseCode != ResponseCode.NoError)
+            {
 
                 throw new ArgumentException("Invalid request message");
             }
 
             return new Request(header,
                 Question.GetAllFromArray(message, offset, header.QuestionCount, out offset),
-                ResourceRecordFactory.GetAllFromArray(message, offset, header.AdditionalRecordCount, out offset));
+                ResourceRecordFactory.GetAllFromArray(message, offset, header.AdditionalRecordCount, out _));
         }
 
-        public Request(Header header, IList<Question> questions, IList<IResourceRecord> additional) {
-            this.header = header;
-            this.questions = questions;
-            this.additional = additional;
+        public Request(Header header, IList<Question> questions, IList<IResourceRecord> additional)
+        {
+            _header = header;
+            _questions = questions;
+            _additional = additional;
         }
 
-        public Request() {
-            this.questions = new List<Question>();
-            this.header = new Header();
-            this.additional = new List<IResourceRecord>();
+        public Request()
+        {
+            _questions = [];
+            _header = new Header();
+            _additional = [];
 
-            this.header.OperationCode = OperationCode.Query;
-            this.header.Response = false;
-            this.header.Id = NextRandomId();
+            _header.OperationCode = OperationCode.Query;
+            _header.Response = false;
+            _header.Id = NextRandomId();
         }
 
-        public Request(IRequest request) {
-            this.header = new Header();
-            this.questions = new List<Question>(request.Questions);
-            this.additional = new List<IResourceRecord>(request.AdditionalRecords);
+        public Request(IRequest request)
+        {
+            _header = new Header();
+            _questions = [.. request.Questions];
+            _additional = [.. request.AdditionalRecords];
 
-            this.header.Response = false;
+            _header.Response = false;
 
             Id = request.Id;
             OperationCode = request.OperationCode;
             RecursionDesired = request.RecursionDesired;
         }
 
-        public IList<Question> Questions {
-            get { return questions; }
+        public IList<Question> Questions
+        {
+            get { return _questions; }
         }
 
-        public IList<IResourceRecord> AdditionalRecords {
-            get { return additional; }
+        public IList<IResourceRecord> AdditionalRecords
+        {
+            get { return _additional; }
         }
 
-        public int Size {
-            get {
-                return header.Size +
-                    questions.Sum(q => q.Size) +
-                    additional.Sum(a => a.Size);
+        [JsonIgnore]
+        public int Size
+        {
+            get
+            {
+                return Header.SIZE +
+                    _questions.Sum(q => q.Size) +
+                    _additional.Sum(a => a.Size);
             }
         }
 
-        public int Id {
-            get { return header.Id; }
-            set { header.Id = value; }
+        public int Id
+        {
+            get => _header.Id; set => _header.Id = value;
         }
 
-        public OperationCode OperationCode {
-            get { return header.OperationCode; }
-            set { header.OperationCode = value; }
+        public OperationCode OperationCode
+        {
+            get => _header.OperationCode; set => _header.OperationCode = value;
         }
 
-        public bool RecursionDesired {
-            get { return header.RecursionDesired; }
-            set { header.RecursionDesired = value; }
+        public bool RecursionDesired
+        {
+            get => _header.RecursionDesired; set => _header.RecursionDesired = value;
         }
 
-        public byte[] ToArray() {
+        public byte[] ToArray()
+        {
             UpdateHeader();
-            ByteStream result = new ByteStream(Size);
+            ByteStream result = new(Size);
 
             result
-                .Append(header.ToArray())
-                .Append(questions.Select(q => q.ToArray()))
-                .Append(additional.Select(a => a.ToArray()));
+                .Append(_header.ToArray())
+                .Append(_questions.Select(q => q.ToArray()))
+                .Append(_additional.Select(a => a.ToArray()));
 
             return result.ToArray();
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             UpdateHeader();
 
-            return ObjectStringifier.New(this)
-                .Add(nameof(Header), header)
-                .Add(nameof(Questions), nameof(AdditionalRecords))
-                .ToString();
+            return JsonSerializer.Serialize(this, StringifierContext.Default.Request);
         }
 
-        private void UpdateHeader() {
-            header.QuestionCount = questions.Count;
-            header.AdditionalRecordCount = additional.Count;
+        private void UpdateHeader()
+        {
+            _header.QuestionCount = _questions.Count;
+            _header.AdditionalRecordCount = _additional.Count;
         }
 
-        private ushort NextRandomId() {
+        private static ushort NextRandomId()
+        {
             byte[] buffer = new byte[sizeof(ushort)];
-            RANDOM.GetBytes(buffer);
+            _random.GetBytes(buffer);
+
             return BitConverter.ToUInt16(buffer, 0);
         }
     }

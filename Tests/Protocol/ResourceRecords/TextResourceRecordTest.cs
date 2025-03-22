@@ -20,7 +20,7 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         [InlineData("a b=c d", "a b", "c d")]
         [InlineData("abc` =123 ", "abc ", "123 ")]
         public void Rfc1464Examples(string internalForm, string expAttributeName, string expAttributeValue) {
-            TextResourceRecord record = new TextResourceRecord(new ArrayTextResourceRecord(internalForm));
+            TextResourceRecord record = new(new ArrayTextResourceRecord(internalForm));
             KeyValuePair<string, string> attribute = record.Attribute;
             Assert.Equal(expAttributeName, attribute.Key);
             Assert.Equal(expAttributeValue, attribute.Value);
@@ -31,7 +31,7 @@ namespace DNS.Tests.Protocol.ResourceRecords {
         [InlineData("=test", "=test", null, "test")]
         [InlineData("", "", null, "")]
         public void NegativeExamples(string input, string expTxtData, string expAttributeName, string expAttributeValue) {
-            TextResourceRecord record = new TextResourceRecord(new ArrayTextResourceRecord(input));
+            TextResourceRecord record = new(new ArrayTextResourceRecord(input));
             KeyValuePair<string, string> attribute = record.Attribute;
 
             Assert.Equal(expTxtData, record.ToStringTextData());

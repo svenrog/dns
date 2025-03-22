@@ -7,9 +7,8 @@ namespace DNS.Tests.Protocol {
     public class ParseDomainTest {
         [Fact]
         public void EmptyDomain() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "empty-label");
-            Domain domain = Domain.FromArray(content, 0, out endOffset);
+            Domain domain = Domain.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("", domain.ToString());
             Assert.Equal(1, domain.Size);
@@ -18,9 +17,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void DomainWithSingleLabel() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "www-label");
-            Domain domain = Domain.FromArray(content, 0, out endOffset);
+            Domain domain = Domain.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("www", domain.ToString());
             Assert.Equal(5, domain.Size);
@@ -29,9 +27,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void DomainWithMultipleLabels() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "www.google.com-label");
-            Domain domain = Domain.FromArray(content, 0, out endOffset);
+            Domain domain = Domain.FromArray(content, 0, out int endOffset);
 
             Assert.Equal("www.google.com", domain.ToString());
             Assert.Equal(16, domain.Size);
@@ -40,9 +37,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void DomainWithMultipleLabelsPreceededByHeader() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "empty-header_www.google.com-label");
-            Domain domain = Domain.FromArray(content, 12, out endOffset);
+            Domain domain = Domain.FromArray(content, 12, out int endOffset);
 
             Assert.Equal("www.google.com", domain.ToString());
             Assert.Equal(16, domain.Size);
@@ -51,9 +47,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void EmptyPointerDomain() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "empty-pointer");
-            Domain domain = Domain.FromArray(content, 1, out endOffset);
+            Domain domain = Domain.FromArray(content, 1, out int endOffset);
 
             Assert.Equal("", domain.ToString());
             Assert.Equal(1, domain.Size);
@@ -62,9 +57,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void PointerDomainWithSingleLabel() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "www-pointer");
-            Domain domain = Domain.FromArray(content, 5, out endOffset);
+            Domain domain = Domain.FromArray(content, 5, out int endOffset);
 
             Assert.Equal("www", domain.ToString());
             Assert.Equal(5, domain.Size);
@@ -73,9 +67,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void PointerDomainWithMultipleLabels() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "www.google.com-pointer");
-            Domain domain = Domain.FromArray(content, 16, out endOffset);
+            Domain domain = Domain.FromArray(content, 16, out int endOffset);
 
             Assert.Equal("www.google.com", domain.ToString());
             Assert.Equal(16, domain.Size);
@@ -84,9 +77,8 @@ namespace DNS.Tests.Protocol {
 
         [Fact]
         public void PointerDomainWithMultipleLabelsPreceededByHeader() {
-            int endOffset = 0;
             byte[] content = Helper.ReadFixture("Domain", "empty-header_www.google.com-pointer");
-            Domain domain = Domain.FromArray(content, 28, out endOffset);
+            Domain domain = Domain.FromArray(content, 28, out int endOffset);
 
             Assert.Equal("www.google.com", domain.ToString());
             Assert.Equal(16, domain.Size);
