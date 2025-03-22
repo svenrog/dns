@@ -49,10 +49,13 @@ namespace DNS.Protocol.ResourceRecords
         public static ResourceRecord FromArray(byte[] message, int offset, out int endOffset)
         {
             Domain domain = Domain.FromArray(message, offset, out offset);
-            Tail tail = Struct.GetStruct<Tail>(message, offset, Tail.SIZE);
 
-            byte[] data = new byte[tail.DataLength];
+            byte[] data = new byte[Tail.SIZE];
+            Array.Copy(message, offset, data, 0, data.Length);
 
+            Tail tail = Tail.CreateFromArray(data);
+
+            data = new byte[tail.DataLength];
             offset += Tail.SIZE;
             Array.Copy(message, offset, data, 0, data.Length);
 
@@ -106,15 +109,17 @@ namespace DNS.Protocol.ResourceRecords
         {
             ByteStream result = new(Size);
 
+            Tail tail = new()
+            {
+                Type = Type,
+                Class = Class,
+                TimeToLive = _ttl,
+                DataLength = _data.Length
+            };
+
             result
                 .Append(_domain.ToArray())
-                .Append(Struct.GetBytes(new Tail()
-                {
-                    Type = Type,
-                    Class = Class,
-                    TimeToLive = _ttl,
-                    DataLength = _data.Length
-                }))
+                .Append(tail.ToArray())
                 .Append(_data);
 
             return result.ToArray();
@@ -125,9 +130,9 @@ namespace DNS.Protocol.ResourceRecords
             return JsonSerializer.Serialize(this, StringifierContext.Default.ResourceRecord);
         }
 
-        [Endian(Endianness.Big)]
+        // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        private struct Tail
+        internal struct Tail
         {
             public const int SIZE = 10;
 
@@ -135,6 +140,45 @@ namespace DNS.Protocol.ResourceRecords
             private ushort _class;
             private uint _ttl;
             private ushort _dataLength;
+
+            private static void ConvertEndianness(byte[] bytes)
+            {
+                if (!BitConverter.IsLittleEndian) return;
+
+                // Manual endian conversion
+                Array.Reverse(bytes, 0, sizeof(ushort));
+                Array.Reverse(bytes, 2, sizeof(ushort));
+                Array.Reverse(bytes, 4, sizeof(uint));
+                Array.Reverse(bytes, 8, sizeof(ushort));
+            }
+
+            public static Tail CreateFromArray(byte[] tail)
+            {
+                if (tail.Length < SIZE)
+                {
+                    throw new ArgumentException("Tail length too small");
+                }
+
+                ConvertEndianness(tail);
+
+                return Struct.PinStruct<Tail>(tail);
+            }
+
+            public readonly byte[] ToArray()
+            {
+                var stream = new ByteStream(SIZE);
+
+                stream.Write(BitConverter.GetBytes(_type));
+                stream.Write(BitConverter.GetBytes(_class));
+                stream.Write(BitConverter.GetBytes(_ttl));
+                stream.Write(BitConverter.GetBytes(_dataLength));
+
+                var buffer = stream.ToArray();
+
+                ConvertEndianness(buffer);
+
+                return buffer;
+            }
 
             public RecordType Type
             {

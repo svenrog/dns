@@ -8,21 +8,11 @@ using System.Text.Json;
 namespace DNS.Protocol
 {
     // 12 bytes message header
-    [Endian(Endianness.Big)]
+    // Endianness.Big
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Header
     {
         public const int SIZE = 12;
-
-        public static Header FromArray(byte[] header)
-        {
-            if (header.Length < SIZE)
-            {
-                throw new ArgumentException("Header length too small");
-            }
-
-            return Struct.GetStruct<Header>(header, 0, SIZE);
-        }
 
         private ushort _id;
 
@@ -40,6 +30,51 @@ namespace DNS.Protocol
 
         // Additional record count: number of records in the Additional section
         private ushort _arCount;
+
+        public static Header FromArray(byte[] header)
+        {
+            if (header.Length < SIZE)
+            {
+                throw new ArgumentException("Header length too small");
+            }
+
+            ConvertEndianness(header);
+
+            return Struct.PinStruct<Header>(header);
+        }
+
+        public readonly byte[] ToArray()
+        {
+            var stream = new ByteStream(SIZE);
+
+            stream.Write(BitConverter.GetBytes(_id));
+            stream.Write([_flag0]);
+            stream.Write([_flag1]);
+            stream.Write(BitConverter.GetBytes(_qdCount));
+            stream.Write(BitConverter.GetBytes(_anCount));
+            stream.Write(BitConverter.GetBytes(_nsCount));
+            stream.Write(BitConverter.GetBytes(_arCount));
+
+            var buffer = stream.ToArray();
+
+            ConvertEndianness(buffer);
+
+            return buffer;
+        }
+
+        private static void ConvertEndianness(byte[] bytes)
+        {
+            if (!BitConverter.IsLittleEndian) return;
+
+            // Manual endian conversion
+            Array.Reverse(bytes, 0, sizeof(ushort));
+            Array.Reverse(bytes, 2, sizeof(byte));
+            Array.Reverse(bytes, 3, sizeof(byte));
+            Array.Reverse(bytes, 4, sizeof(ushort));
+            Array.Reverse(bytes, 6, sizeof(ushort));
+            Array.Reverse(bytes, 8, sizeof(ushort));
+            Array.Reverse(bytes, 10, sizeof(ushort));
+        }
 
         public int Id
         {
@@ -109,11 +144,6 @@ namespace DNS.Protocol
         public ResponseCode ResponseCode
         {
             readonly get => (ResponseCode)RCode; set => RCode = (byte)value;
-        }
-
-        public readonly byte[] ToArray()
-        {
-            return Struct.GetBytes(this);
         }
 
         public override readonly string ToString()

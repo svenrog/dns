@@ -1,6 +1,7 @@
 ﻿using DNS.Protocol.Marshalling;
 using DNS.Protocol.Serialization;
 using DNS.Protocol.Utils;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -36,7 +37,11 @@ namespace DNS.Protocol
         public static Question FromArray(byte[] message, int offset, out int endOffset)
         {
             Domain domain = Domain.FromArray(message, offset, out offset);
-            Tail tail = Struct.GetStruct<Tail>(message, offset, Tail.SIZE);
+
+            byte[] data = new byte[Tail.SIZE];
+            Array.Copy(message, offset, data, 0, Tail.SIZE);
+
+            Tail tail = Tail.CreateFromArray(data);
 
             endOffset = offset + Tail.SIZE;
 
@@ -80,9 +85,15 @@ namespace DNS.Protocol
         {
             ByteStream result = new(Size);
 
+            Tail tail = new()
+            {
+                Type = Type,
+                Class = Class
+            };
+
             result
                 .Append(_domain.ToArray())
-                .Append(Struct.GetBytes(new Tail { Type = Type, Class = Class }));
+                .Append(tail.ToArray());
 
             return result.ToArray();
         }
@@ -92,14 +103,49 @@ namespace DNS.Protocol
             return JsonSerializer.Serialize(this, StringifierContext.Default.Question);
         }
 
-        [Endian(Endianness.Big)]
+        // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        private struct Tail
+        internal struct Tail
         {
             public const int SIZE = 4;
 
             private ushort _type;
             private ushort _class;
+
+            private static void ConvertEndianness(byte[] bytes)
+            {
+                if (!BitConverter.IsLittleEndian) return;
+
+                // Manual endian conversion
+                Array.Reverse(bytes, 0, sizeof(ushort));
+                Array.Reverse(bytes, 2, sizeof(ushort));
+            }
+
+            public static Tail CreateFromArray(byte[] tail)
+            {
+                if (tail.Length < SIZE)
+                {
+                    throw new ArgumentException("Header length too small");
+                }
+
+                ConvertEndianness(tail);
+
+                return Struct.PinStruct<Tail>(tail);
+            }
+
+            public readonly byte[] ToArray()
+            {
+                var stream = new ByteStream(SIZE);
+
+                stream.Write(BitConverter.GetBytes(_type));
+                stream.Write(BitConverter.GetBytes(_class));
+
+                var buffer = stream.ToArray();
+
+                ConvertEndianness(buffer);
+
+                return buffer;
+            }
 
             public RecordType Type
             {

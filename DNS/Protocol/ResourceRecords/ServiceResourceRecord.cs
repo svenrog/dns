@@ -1,5 +1,6 @@
 using DNS.Protocol.Marshalling;
 using DNS.Protocol.Serialization;
+using DNS.Protocol.Utils;
 using System;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -20,7 +21,7 @@ namespace DNS.Protocol.ResourceRecords
                 Port = port
             };
 
-            Struct.GetBytes(head).CopyTo(data, 0);
+            head.ToArray().CopyTo(data, 0);
             trg.CopyTo(data, Head.SIZE);
 
             return new ResourceRecord(domain, data, RecordType.SRV, RecordClass.IN, ttl);
@@ -28,7 +29,9 @@ namespace DNS.Protocol.ResourceRecords
 
         public ServiceResourceRecord(IResourceRecord record, byte[] message, int dataOffset) : base(record)
         {
-            Head head = Struct.GetStruct<Head>(message, dataOffset, Head.SIZE);
+            var data = new byte[Head.SIZE];
+            Array.Copy(message, dataOffset, data, 0, data.Length);
+            Head head = Head.FromArray(data);
 
             Priority = head.Priority;
             Weight = head.Weight;
@@ -55,15 +58,52 @@ namespace DNS.Protocol.ResourceRecords
             return JsonSerializer.Serialize(this, StringifierContext.Default.ServiceResourceRecord);
         }
 
-        [Marshalling.Endian(Marshalling.Endianness.Big)]
+        // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        private struct Head
+        internal struct Head
         {
             public const int SIZE = 6;
 
             private ushort _priority;
             private ushort _weight;
             private ushort _port;
+
+            public static Head FromArray(byte[] head)
+            {
+                if (head.Length < SIZE)
+                {
+                    throw new ArgumentException("Head length too small");
+                }
+
+                ConvertEndianness(head);
+
+                return Struct.PinStruct<Head>(head);
+            }
+
+            public readonly byte[] ToArray()
+            {
+                var stream = new ByteStream(SIZE);
+
+                stream.Write(BitConverter.GetBytes(_priority));
+                stream.Write(BitConverter.GetBytes(_weight));
+                stream.Write(BitConverter.GetBytes(_port));
+
+                var buffer = stream.ToArray();
+
+                ConvertEndianness(buffer);
+
+                return buffer;
+            }
+
+            private static void ConvertEndianness(byte[] bytes)
+            {
+                if (!BitConverter.IsLittleEndian) return;
+
+                // Manual endian conversion
+                Array.Reverse(bytes, 0, sizeof(ushort));
+                Array.Reverse(bytes, 2, sizeof(ushort));
+                Array.Reverse(bytes, 4, sizeof(ushort));
+            }
 
             public ushort Priority
             {

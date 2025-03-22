@@ -1,4 +1,5 @@
-﻿using DNS.Protocol.Serialization;
+﻿using DNS.Protocol.Marshalling;
+using DNS.Protocol.Serialization;
 using DNS.Protocol.Utils;
 using System;
 using System.Runtime.InteropServices;
@@ -12,6 +13,7 @@ namespace DNS.Protocol.ResourceRecords
                 TimeSpan refresh, TimeSpan retry, TimeSpan expire, TimeSpan minTtl, TimeSpan ttl)
         {
             ByteStream data = new(Options.SIZE + master.Size + responsible.Size);
+
             Options tail = new()
             {
                 SerialNumber = serial,
@@ -24,7 +26,7 @@ namespace DNS.Protocol.ResourceRecords
             data
                 .Append(master.ToArray())
                 .Append(responsible.ToArray())
-                .Append(Marshalling.Struct.GetBytes(tail));
+                .Append(tail.ToArray());
 
             return new ResourceRecord(domain, data.ToArray(), RecordType.SOA, RecordClass.IN, ttl);
         }
@@ -35,7 +37,10 @@ namespace DNS.Protocol.ResourceRecords
             MasterDomainName = Domain.FromArray(message, dataOffset, out dataOffset);
             ResponsibleDomainName = Domain.FromArray(message, dataOffset, out dataOffset);
 
-            Options tail = Marshalling.Struct.GetStruct<Options>(message, dataOffset, Options.SIZE);
+            var data = new byte[Options.SIZE];
+            Array.Copy(message, dataOffset, data, 0, data.Length);
+
+            Options tail = Options.FromArray(data);
 
             SerialNumber = tail.SerialNumber;
             RefreshInterval = tail.RefreshInterval;
@@ -77,7 +82,7 @@ namespace DNS.Protocol.ResourceRecords
             return JsonSerializer.Serialize(this, StringifierContext.Default.StartOfAuthorityResourceRecord);
         }
 
-        [Marshalling.Endian(Marshalling.Endianness.Big)]
+        // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct Options
         {
@@ -88,6 +93,47 @@ namespace DNS.Protocol.ResourceRecords
             private uint _retryInterval;
             private uint _expireInterval;
             private uint _ttl;
+
+            public static Options FromArray(byte[] options)
+            {
+                if (options.Length < SIZE)
+                {
+                    throw new ArgumentException("Options length too small");
+                }
+
+                ConvertEndianness(options);
+
+                return Struct.PinStruct<Options>(options);
+            }
+
+            public readonly byte[] ToArray()
+            {
+                var stream = new ByteStream(SIZE);
+
+                stream.Write(BitConverter.GetBytes(_serialNumber));
+                stream.Write(BitConverter.GetBytes(_refreshInterval));
+                stream.Write(BitConverter.GetBytes(_retryInterval));
+                stream.Write(BitConverter.GetBytes(_expireInterval));
+                stream.Write(BitConverter.GetBytes(_ttl));
+
+                var buffer = stream.ToArray();
+
+                ConvertEndianness(buffer);
+
+                return buffer;
+            }
+
+            private static void ConvertEndianness(byte[] bytes)
+            {
+                if (!BitConverter.IsLittleEndian) return;
+
+                // Manual endian conversion
+                Array.Reverse(bytes, 0, sizeof(uint));
+                Array.Reverse(bytes, 4, sizeof(uint));
+                Array.Reverse(bytes, 8, sizeof(uint));
+                Array.Reverse(bytes, 12, sizeof(uint));
+                Array.Reverse(bytes, 16, sizeof(uint));
+            }
 
             public long SerialNumber
             {
