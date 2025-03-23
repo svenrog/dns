@@ -1,8 +1,8 @@
-﻿using DNS.Protocol.Marshalling;
-using DNS.Protocol.Serialization;
+﻿using DNS.Protocol.Serialization;
 using DNS.Protocol.Utils;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -112,15 +112,6 @@ namespace DNS.Protocol
             private ushort _type;
             private ushort _class;
 
-            private static void ConvertEndianness(byte[] bytes)
-            {
-                if (!BitConverter.IsLittleEndian) return;
-
-                // Manual endian conversion
-                Array.Reverse(bytes, 0, sizeof(ushort));
-                Array.Reverse(bytes, 2, sizeof(ushort));
-            }
-
             public static Tail CreateFromArray(byte[] tail)
             {
                 if (tail.Length < SIZE)
@@ -130,21 +121,30 @@ namespace DNS.Protocol
 
                 ConvertEndianness(tail);
 
-                return Struct.PinStruct<Tail>(tail);
+                return MemoryMarshal.Read<Tail>(tail);
             }
 
             public readonly byte[] ToArray()
             {
-                var stream = new ByteStream(SIZE);
+                Span<byte> span = stackalloc byte[SIZE];
 
-                stream.Write(BitConverter.GetBytes(_type));
-                stream.Write(BitConverter.GetBytes(_class));
+                Unsafe.As<byte, ushort>(ref span[0]) = _type;
+                Unsafe.As<byte, ushort>(ref span[2]) = _class;
 
-                var buffer = stream.ToArray();
+                var buffer = span.ToArray();
 
                 ConvertEndianness(buffer);
 
                 return buffer;
+            }
+
+            private static void ConvertEndianness(byte[] bytes)
+            {
+                if (!BitConverter.IsLittleEndian) return;
+
+                // Manual endian conversion
+                Array.Reverse(bytes, 0, sizeof(ushort));
+                Array.Reverse(bytes, 2, sizeof(ushort));
             }
 
             public RecordType Type

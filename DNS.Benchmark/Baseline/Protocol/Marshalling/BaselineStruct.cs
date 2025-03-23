@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace DNS.Protocol.Marshalling
+namespace DNS.Benchmark.Baseline.Protocol.Marshalling
 {
-    public static class Struct
+    public static class BaselineStruct
     {
         public static T PinStruct<[DynamicallyAccessedMembers(
            DynamicallyAccessedMemberTypes.PublicConstructors |

@@ -1,54 +1,48 @@
-﻿using DNS.Protocol.Serialization;
-using DNS.Protocol.Utils;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using DNS.Benchmark.Baseline.Protocol.Marshalling;
+using DNS.Benchmark.Baseline.Protocol.Utils;
+using DNS.Protocol.ResourceRecords;
 using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace DNS.Protocol.ResourceRecords
+namespace DNS.Benchmark.Baseline.Protocol.ResourceRecords
 {
-    public class ResourceRecord(
-        Domain domain,
+    public class BaselineResourceRecord(
+        BaselineDomain domain,
         byte[] data,
-        RecordType type,
-        RecordClass @class = RecordClass.IN,
+        BaselineRecordType type,
+        BaselineRecordClass @class = BaselineRecordClass.IN,
         TimeSpan ttl = default)
-        : IResourceRecord
+        : IBaselineResourceRecord
     {
-        private readonly Domain _domain = domain;
-        private readonly RecordType _type = type;
-        private readonly RecordClass _class = @class;
+        private readonly BaselineDomain _domain = domain;
+        private readonly BaselineRecordType _type = type;
+        private readonly BaselineRecordClass _class = @class;
         private readonly TimeSpan _ttl = ttl;
         private readonly byte[] _data = data;
 
-        public static IList<ResourceRecord> GetAllFromArray(byte[] message, int offset, int count)
+        public static IList<BaselineResourceRecord> GetAllFromArray(byte[] message, int offset, int count)
         {
             return GetAllFromArray(message, offset, count, out _);
         }
 
-        public static IList<ResourceRecord> GetAllFromArray(byte[] message, int offset, int count, out int endOffset)
+        public static IList<BaselineResourceRecord> GetAllFromArray(byte[] message, int offset, int count, out int endOffset)
         {
-            List<ResourceRecord> records = new(count);
+            List<BaselineResourceRecord> records = new(count);
 
             for (int i = 0; i < count; i++)
-            {
                 records.Add(FromArray(message, offset, out offset));
-            }
 
             endOffset = offset;
             return records;
         }
 
-        public static ResourceRecord FromArray(byte[] message, int offset)
+        public static BaselineResourceRecord FromArray(byte[] message, int offset)
         {
             return FromArray(message, offset, out _);
         }
 
-        public static ResourceRecord FromArray(byte[] message, int offset, out int endOffset)
+        public static BaselineResourceRecord FromArray(byte[] message, int offset, out int endOffset)
         {
-            Domain domain = Domain.FromArray(message, offset, out offset);
+            BaselineDomain domain = BaselineDomain.FromArray(message, offset, out offset);
 
             byte[] data = new byte[Tail.SIZE];
             Array.Copy(message, offset, data, 0, data.Length);
@@ -61,25 +55,25 @@ namespace DNS.Protocol.ResourceRecords
 
             endOffset = offset + data.Length;
 
-            return new ResourceRecord(domain, data, tail.Type, tail.Class, tail.TimeToLive);
+            return new BaselineResourceRecord(domain, data, tail.Type, tail.Class, tail.TimeToLive);
         }
 
-        public static ResourceRecord FromQuestion(Question question, byte[] data, TimeSpan ttl = default)
+        public static BaselineResourceRecord FromQuestion(BaselineQuestion question, byte[] data, TimeSpan ttl = default)
         {
-            return new ResourceRecord(question.Name, data, question.Type, question.Class, ttl);
+            return new BaselineResourceRecord(question.Name, data, question.Type, question.Class, ttl);
         }
 
-        public Domain Name
+        public BaselineDomain Name
         {
             get { return _domain; }
         }
 
-        public RecordType Type
+        public BaselineRecordType Type
         {
             get { return _type; }
         }
 
-        public RecordClass Class
+        public BaselineRecordClass Class
         {
             get { return _class; }
         }
@@ -99,7 +93,6 @@ namespace DNS.Protocol.ResourceRecords
             get { return _data; }
         }
 
-        [JsonIgnore]
         public int Size
         {
             get { return _domain.Size + Tail.SIZE + _data.Length; }
@@ -107,7 +100,7 @@ namespace DNS.Protocol.ResourceRecords
 
         public byte[] ToArray()
         {
-            ByteStream result = new(Size);
+            BaselineByteStream result = new(Size);
 
             Tail tail = new()
             {
@@ -125,11 +118,6 @@ namespace DNS.Protocol.ResourceRecords
             return result.ToArray();
         }
 
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this, StringifierContext.Default.ResourceRecord);
-        }
-
         // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
         internal struct Tail
@@ -140,34 +128,6 @@ namespace DNS.Protocol.ResourceRecords
             private ushort _class;
             private uint _ttl;
             private ushort _dataLength;
-
-            public static Tail CreateFromArray(byte[] tail)
-            {
-                if (tail.Length < SIZE)
-                {
-                    throw new ArgumentException("Tail length too small");
-                }
-
-                ConvertEndianness(tail);
-
-                return MemoryMarshal.Read<Tail>(tail);
-            }
-
-            public readonly byte[] ToArray()
-            {
-                Span<byte> span = stackalloc byte[SIZE];
-
-                Unsafe.As<byte, ushort>(ref span[0]) = _type;
-                Unsafe.As<byte, ushort>(ref span[2]) = _class;
-                Unsafe.As<byte, uint>(ref span[4]) = _ttl;
-                Unsafe.As<byte, ushort>(ref span[8]) = _dataLength;
-
-                var buffer = span.ToArray();
-
-                ConvertEndianness(buffer);
-
-                return buffer;
-            }
 
             private static void ConvertEndianness(byte[] bytes)
             {
@@ -180,14 +140,40 @@ namespace DNS.Protocol.ResourceRecords
                 Array.Reverse(bytes, 8, sizeof(ushort));
             }
 
-            public RecordType Type
+            public static Tail CreateFromArray(byte[] tail)
             {
-                readonly get => (RecordType)_type; set => _type = (ushort)value;
+                if (tail.Length < SIZE)
+                    throw new ArgumentException("Tail length too small");
+
+                ConvertEndianness(tail);
+
+                return BaselineStruct.PinStruct<Tail>(tail);
             }
 
-            public RecordClass Class
+            public readonly byte[] ToArray()
             {
-                readonly get => (RecordClass)_class; set => _class = (ushort)value;
+                var stream = new BaselineByteStream(SIZE);
+
+                stream.Write(BitConverter.GetBytes(_type));
+                stream.Write(BitConverter.GetBytes(_class));
+                stream.Write(BitConverter.GetBytes(_ttl));
+                stream.Write(BitConverter.GetBytes(_dataLength));
+
+                var buffer = stream.ToArray();
+
+                ConvertEndianness(buffer);
+
+                return buffer;
+            }
+
+            public BaselineRecordType Type
+            {
+                readonly get => (BaselineRecordType)_type; set => _type = (ushort)value;
+            }
+
+            public BaselineRecordClass Class
+            {
+                readonly get => (BaselineRecordClass)_class; set => _class = (ushort)value;
             }
 
             public TimeSpan TimeToLive

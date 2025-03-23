@@ -1,14 +1,13 @@
-using DNS.Protocol.Serialization;
-using System;
-using System.Runtime.CompilerServices;
+using DNS.Benchmark.Baseline.Protocol.Marshalling;
+using DNS.Benchmark.Baseline.Protocol.Utils;
+using DNS.Protocol.ResourceRecords;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 
-namespace DNS.Protocol.ResourceRecords
+namespace DNS.Benchmark.Baseline.Protocol.ResourceRecords
 {
-    public class ServiceResourceRecord : BaseResourceRecord
+    public class BaselineServiceResourceRecord : BaselineBaseResourceRecord
     {
-        private static ResourceRecord Create(Domain domain, ushort priority, ushort weight, ushort port, Domain target, TimeSpan ttl)
+        private static BaselineResourceRecord Create(BaselineDomain domain, ushort priority, ushort weight, ushort port, BaselineDomain target, TimeSpan ttl)
         {
             byte[] trg = target.ToArray();
             byte[] data = new byte[Head.SIZE + trg.Length];
@@ -23,10 +22,10 @@ namespace DNS.Protocol.ResourceRecords
             head.ToArray().CopyTo(data, 0);
             trg.CopyTo(data, Head.SIZE);
 
-            return new ResourceRecord(domain, data, RecordType.SRV, RecordClass.IN, ttl);
+            return new BaselineResourceRecord(domain, data, BaselineRecordType.SRV, BaselineRecordClass.IN, ttl);
         }
 
-        public ServiceResourceRecord(IResourceRecord record, byte[] message, int dataOffset) : base(record)
+        public BaselineServiceResourceRecord(IBaselineResourceRecord record, byte[] message, int dataOffset) : base(record)
         {
             var data = new byte[Head.SIZE];
             Array.Copy(message, dataOffset, data, 0, data.Length);
@@ -35,10 +34,10 @@ namespace DNS.Protocol.ResourceRecords
             Priority = head.Priority;
             Weight = head.Weight;
             Port = head.Port;
-            Target = Domain.FromArray(message, dataOffset + Head.SIZE);
+            Target = BaselineDomain.FromArray(message, dataOffset + Head.SIZE);
         }
 
-        public ServiceResourceRecord(Domain domain, ushort priority, ushort weight, ushort port, Domain target, TimeSpan ttl = default) :
+        public BaselineServiceResourceRecord(BaselineDomain domain, ushort priority, ushort weight, ushort port, BaselineDomain target, TimeSpan ttl = default) :
                 base(Create(domain, priority, weight, port, target, ttl))
         {
             Priority = priority;
@@ -50,12 +49,7 @@ namespace DNS.Protocol.ResourceRecords
         public ushort Priority { get; }
         public ushort Weight { get; }
         public ushort Port { get; }
-        public Domain Target { get; }
-
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this, StringifierContext.Default.ServiceResourceRecord);
-        }
+        public BaselineDomain Target { get; }
 
         // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -70,24 +64,22 @@ namespace DNS.Protocol.ResourceRecords
             public static Head FromArray(byte[] head)
             {
                 if (head.Length < SIZE)
-                {
                     throw new ArgumentException("Head length too small");
-                }
 
                 ConvertEndianness(head);
 
-                return MemoryMarshal.Read<Head>(head);
+                return BaselineStruct.PinStruct<Head>(head);
             }
 
             public readonly byte[] ToArray()
             {
-                Span<byte> span = stackalloc byte[SIZE];
+                var stream = new BaselineByteStream(SIZE);
 
-                Unsafe.As<byte, ushort>(ref span[0]) = _priority;
-                Unsafe.As<byte, ushort>(ref span[2]) = _weight;
-                Unsafe.As<byte, ushort>(ref span[4]) = _port;
+                stream.Write(BitConverter.GetBytes(_priority));
+                stream.Write(BitConverter.GetBytes(_weight));
+                stream.Write(BitConverter.GetBytes(_port));
 
-                var buffer = span.ToArray();
+                var buffer = stream.ToArray();
 
                 ConvertEndianness(buffer);
 

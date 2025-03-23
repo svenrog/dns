@@ -1,7 +1,7 @@
-﻿using DNS.Protocol.Marshalling;
-using DNS.Protocol.Serialization;
+﻿using DNS.Protocol.Serialization;
 using DNS.Protocol.Utils;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -40,22 +40,22 @@ namespace DNS.Protocol
 
             ConvertEndianness(header);
 
-            return Struct.PinStruct<Header>(header);
+            return MemoryMarshal.Read<Header>(header);
         }
 
         public readonly byte[] ToArray()
         {
-            var stream = new ByteStream(SIZE);
+            Span<byte> span = stackalloc byte[SIZE];
 
-            stream.Write(BitConverter.GetBytes(_id));
-            stream.Write([_flag0]);
-            stream.Write([_flag1]);
-            stream.Write(BitConverter.GetBytes(_qdCount));
-            stream.Write(BitConverter.GetBytes(_anCount));
-            stream.Write(BitConverter.GetBytes(_nsCount));
-            stream.Write(BitConverter.GetBytes(_arCount));
+            Unsafe.As<byte, ushort>(ref span[0]) = _id;
+            Unsafe.As<byte, byte>(ref span[2]) = _flag0;
+            Unsafe.As<byte, byte>(ref span[3]) = _flag1;
+            Unsafe.As<byte, ushort>(ref span[4]) = _qdCount;
+            Unsafe.As<byte, ushort>(ref span[6]) = _anCount;
+            Unsafe.As<byte, ushort>(ref span[8]) = _nsCount;
+            Unsafe.As<byte, ushort>(ref span[10]) = _arCount;
 
-            var buffer = stream.ToArray();
+            var buffer = span.ToArray();
 
             ConvertEndianness(buffer);
 

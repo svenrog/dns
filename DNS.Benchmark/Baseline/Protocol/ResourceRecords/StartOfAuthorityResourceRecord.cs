@@ -1,18 +1,16 @@
-﻿using DNS.Protocol.Serialization;
-using DNS.Protocol.Utils;
-using System;
-using System.Runtime.CompilerServices;
+﻿using DNS.Benchmark.Baseline.Protocol.Marshalling;
+using DNS.Benchmark.Baseline.Protocol.Utils;
+using DNS.Protocol.ResourceRecords;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 
-namespace DNS.Protocol.ResourceRecords
+namespace DNS.Benchmark.Baseline.Protocol.ResourceRecords
 {
-    public class StartOfAuthorityResourceRecord : BaseResourceRecord
+    public class StartOfAuthorityResourceRecord : BaselineBaseResourceRecord
     {
-        private static ResourceRecord Create(Domain domain, Domain master, Domain responsible, long serial,
+        private static BaselineResourceRecord Create(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible, long serial,
                 TimeSpan refresh, TimeSpan retry, TimeSpan expire, TimeSpan minTtl, TimeSpan ttl)
         {
-            ByteStream data = new(Options.SIZE + master.Size + responsible.Size);
+            BaselineByteStream data = new(Options.SIZE + master.Size + responsible.Size);
 
             Options tail = new()
             {
@@ -28,14 +26,14 @@ namespace DNS.Protocol.ResourceRecords
                 .Append(responsible.ToArray())
                 .Append(tail.ToArray());
 
-            return new ResourceRecord(domain, data.ToArray(), RecordType.SOA, RecordClass.IN, ttl);
+            return new BaselineResourceRecord(domain, data.ToArray(), BaselineRecordType.SOA, BaselineRecordClass.IN, ttl);
         }
 
-        public StartOfAuthorityResourceRecord(IResourceRecord record, byte[] message, int dataOffset)
+        public StartOfAuthorityResourceRecord(IBaselineResourceRecord record, byte[] message, int dataOffset)
             : base(record)
         {
-            MasterDomainName = Domain.FromArray(message, dataOffset, out dataOffset);
-            ResponsibleDomainName = Domain.FromArray(message, dataOffset, out dataOffset);
+            MasterDomainName = BaselineDomain.FromArray(message, dataOffset, out dataOffset);
+            ResponsibleDomainName = BaselineDomain.FromArray(message, dataOffset, out dataOffset);
 
             var data = new byte[Options.SIZE];
             Array.Copy(message, dataOffset, data, 0, data.Length);
@@ -49,7 +47,7 @@ namespace DNS.Protocol.ResourceRecords
             MinimumTimeToLive = tail.MinimumTimeToLive;
         }
 
-        public StartOfAuthorityResourceRecord(Domain domain, Domain master, Domain responsible, long serial,
+        public StartOfAuthorityResourceRecord(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible, long serial,
                 TimeSpan refresh, TimeSpan retry, TimeSpan expire, TimeSpan minTtl, TimeSpan ttl = default) :
             base(Create(domain, master, responsible, serial, refresh, retry, expire, minTtl, ttl))
         {
@@ -63,24 +61,19 @@ namespace DNS.Protocol.ResourceRecords
             MinimumTimeToLive = minTtl;
         }
 
-        public StartOfAuthorityResourceRecord(Domain domain, Domain master, Domain responsible,
+        public StartOfAuthorityResourceRecord(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible,
                 Options options = default, TimeSpan ttl = default) :
             this(domain, master, responsible, options.SerialNumber, options.RefreshInterval, options.RetryInterval,
                     options.ExpireInterval, options.MinimumTimeToLive, ttl)
         { }
 
-        public Domain MasterDomainName { get; }
-        public Domain ResponsibleDomainName { get; }
+        public BaselineDomain MasterDomainName { get; }
+        public BaselineDomain ResponsibleDomainName { get; }
         public long SerialNumber { get; }
         public TimeSpan RefreshInterval { get; }
         public TimeSpan RetryInterval { get; }
         public TimeSpan ExpireInterval { get; }
         public TimeSpan MinimumTimeToLive { get; }
-
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this, StringifierContext.Default.StartOfAuthorityResourceRecord);
-        }
 
         // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -97,26 +90,24 @@ namespace DNS.Protocol.ResourceRecords
             public static Options FromArray(byte[] options)
             {
                 if (options.Length < SIZE)
-                {
                     throw new ArgumentException("Options length too small");
-                }
 
                 ConvertEndianness(options);
 
-                return MemoryMarshal.Read<Options>(options);
+                return BaselineStruct.PinStruct<Options>(options);
             }
 
             public readonly byte[] ToArray()
             {
-                Span<byte> span = stackalloc byte[SIZE];
+                var stream = new BaselineByteStream(SIZE);
 
-                Unsafe.As<byte, uint>(ref span[0]) = _serialNumber;
-                Unsafe.As<byte, uint>(ref span[4]) = _refreshInterval;
-                Unsafe.As<byte, uint>(ref span[8]) = _retryInterval;
-                Unsafe.As<byte, uint>(ref span[12]) = _expireInterval;
-                Unsafe.As<byte, uint>(ref span[16]) = _ttl;
+                stream.Write(BitConverter.GetBytes(_serialNumber));
+                stream.Write(BitConverter.GetBytes(_refreshInterval));
+                stream.Write(BitConverter.GetBytes(_retryInterval));
+                stream.Write(BitConverter.GetBytes(_expireInterval));
+                stream.Write(BitConverter.GetBytes(_ttl));
 
-                var buffer = span.ToArray();
+                var buffer = stream.ToArray();
 
                 ConvertEndianness(buffer);
 
