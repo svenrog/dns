@@ -30,12 +30,15 @@ public struct BaselineHeader
 
     public static BaselineHeader FromArray(byte[] header)
     {
+        byte[] buffer = new byte[SIZE];
+        Array.Copy(header, 0, buffer, 0, buffer.Length);
+
         if (header.Length < SIZE)
             throw new ArgumentException("Header length too small");
 
-        ConvertEndianness(header);
+        ConvertEndianness(buffer);
 
-        return BaselineStruct.PinStruct<BaselineHeader>(header);
+        return BaselineStruct.GetStruct<BaselineHeader>(buffer, 0, SIZE);
     }
 
     public readonly byte[] ToArray()

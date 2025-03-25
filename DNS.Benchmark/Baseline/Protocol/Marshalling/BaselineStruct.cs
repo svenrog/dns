@@ -5,11 +5,13 @@ namespace DNS.Benchmark.Baseline.Protocol.Marshalling
 {
     public static class BaselineStruct
     {
-        public static T PinStruct<[DynamicallyAccessedMembers(
+        public static T GetStruct<[DynamicallyAccessedMembers(
            DynamicallyAccessedMemberTypes.PublicConstructors |
            DynamicallyAccessedMemberTypes.NonPublicConstructors
-       )] T>(byte[] data) where T : struct
+       )] T>(byte[] data, int offset, int length) where T : struct
         {
+            byte[] buffer = new byte[length];
+            Array.Copy(data, offset, buffer, 0, buffer.Length);
             GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
             try

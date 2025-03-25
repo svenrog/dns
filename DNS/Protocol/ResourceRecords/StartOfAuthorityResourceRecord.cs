@@ -12,7 +12,7 @@ namespace DNS.Protocol.ResourceRecords
         private static ResourceRecord Create(Domain domain, Domain master, Domain responsible, long serial,
                 TimeSpan refresh, TimeSpan retry, TimeSpan expire, TimeSpan minTtl, TimeSpan ttl)
         {
-            ByteStream data = new(Options.SIZE + master.Size + responsible.Size);
+            ByteArrayBuilder builder = new(Options.SIZE + master.Size + responsible.Size);
 
             Options tail = new()
             {
@@ -23,12 +23,12 @@ namespace DNS.Protocol.ResourceRecords
                 MinimumTimeToLive = minTtl
             };
 
-            data
+            builder
                 .Append(master.ToArray())
                 .Append(responsible.ToArray())
                 .Append(tail.ToArray());
 
-            return new ResourceRecord(domain, data.ToArray(), RecordType.SOA, RecordClass.IN, ttl);
+            return new ResourceRecord(domain, builder.Build(), RecordType.SOA, RecordClass.IN, ttl);
         }
 
         public StartOfAuthorityResourceRecord(IResourceRecord record, byte[] message, int dataOffset)

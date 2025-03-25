@@ -26,14 +26,14 @@ public class HeaderBenchmarks
     }
 
     [Benchmark]
-    public void ParseHeaderBaseline()
+    public void HeaderParseBaseline()
     {
         BaselineHeader.FromArray(_all);
         BaselineHeader.FromArray(_empty);
     }
 
     [Benchmark]
-    public void ParseHeader()
+    public void HeaderParse()
     {
         Header.FromArray(_all);
         Header.FromArray(_empty);

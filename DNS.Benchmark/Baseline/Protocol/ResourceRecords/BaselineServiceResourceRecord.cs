@@ -68,7 +68,7 @@ namespace DNS.Benchmark.Baseline.Protocol.ResourceRecords
 
                 ConvertEndianness(head);
 
-                return BaselineStruct.PinStruct<Head>(head);
+                return BaselineStruct.GetStruct<Head>(head, 0, SIZE);
             }
 
             public readonly byte[] ToArray()

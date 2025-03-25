@@ -38,42 +38,46 @@ namespace DNS.Protocol
                 throw new ArgumentException("Header length too small");
             }
 
-            ConvertEndianness(header);
+            Span<byte> buffer = stackalloc byte[SIZE];
 
-            return MemoryMarshal.Read<Header>(header);
+            header.AsSpan()
+                .Slice(0, SIZE)
+                .CopyTo(buffer);
+
+            ConvertEndianness(ref buffer);
+
+            return MemoryMarshal.Read<Header>(buffer);
         }
 
         public readonly byte[] ToArray()
         {
-            Span<byte> span = stackalloc byte[SIZE];
+            Span<byte> buffer = stackalloc byte[SIZE];
 
-            Unsafe.As<byte, ushort>(ref span[0]) = _id;
-            Unsafe.As<byte, byte>(ref span[2]) = _flag0;
-            Unsafe.As<byte, byte>(ref span[3]) = _flag1;
-            Unsafe.As<byte, ushort>(ref span[4]) = _qdCount;
-            Unsafe.As<byte, ushort>(ref span[6]) = _anCount;
-            Unsafe.As<byte, ushort>(ref span[8]) = _nsCount;
-            Unsafe.As<byte, ushort>(ref span[10]) = _arCount;
+            Unsafe.As<byte, ushort>(ref buffer[0]) = _id;
+            Unsafe.As<byte, byte>(ref buffer[2]) = _flag0;
+            Unsafe.As<byte, byte>(ref buffer[3]) = _flag1;
+            Unsafe.As<byte, ushort>(ref buffer[4]) = _qdCount;
+            Unsafe.As<byte, ushort>(ref buffer[6]) = _anCount;
+            Unsafe.As<byte, ushort>(ref buffer[8]) = _nsCount;
+            Unsafe.As<byte, ushort>(ref buffer[10]) = _arCount;
 
-            var buffer = span.ToArray();
+            ConvertEndianness(ref buffer);
 
-            ConvertEndianness(buffer);
-
-            return buffer;
+            return buffer.ToArray();
         }
 
-        private static void ConvertEndianness(byte[] bytes)
+        private static void ConvertEndianness(ref Span<byte> bytes)
         {
             if (!BitConverter.IsLittleEndian) return;
 
             // Manual endian conversion
-            Array.Reverse(bytes, 0, sizeof(ushort));
-            Array.Reverse(bytes, 2, sizeof(byte));
-            Array.Reverse(bytes, 3, sizeof(byte));
-            Array.Reverse(bytes, 4, sizeof(ushort));
-            Array.Reverse(bytes, 6, sizeof(ushort));
-            Array.Reverse(bytes, 8, sizeof(ushort));
-            Array.Reverse(bytes, 10, sizeof(ushort));
+            bytes.Slice(0, sizeof(ushort)).Reverse();
+            bytes.Slice(2, sizeof(byte)).Reverse();
+            bytes.Slice(3, sizeof(byte)).Reverse();
+            bytes.Slice(4, sizeof(ushort)).Reverse();
+            bytes.Slice(6, sizeof(ushort)).Reverse();
+            bytes.Slice(8, sizeof(ushort)).Reverse();
+            bytes.Slice(10, sizeof(ushort)).Reverse();
         }
 
         public int Id

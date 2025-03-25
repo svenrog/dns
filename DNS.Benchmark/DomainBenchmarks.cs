@@ -26,27 +26,39 @@ public class DomainBenchmarks
     }
 
     [Benchmark]
-    public void ParseHeaderBaseline()
+    public void DomainParseArrayBaseline()
     {
         BaselineDomain.FromArray(_pointer, 16, out int _);
         BaselineDomain.FromArray(_empty, 1, out int _);
     }
 
     [Benchmark]
-    public void ParseHeader()
+    public void DomainParseArray()
     {
         Domain.FromArray(_pointer, 16, out int _);
         Domain.FromArray(_empty, 1, out int _);
     }
 
     [Benchmark]
-    public void HeaderToArrayBaseline()
+    public void DomainParseStringBaseline()
+    {
+        new BaselineDomain("www.google.com");
+    }
+
+    [Benchmark]
+    public void DomainParseString()
+    {
+        new Domain("www.google.com");
+    }
+
+    [Benchmark]
+    public void DomainToArrayBaseline()
     {
         _b.ToArray();
     }
 
     [Benchmark]
-    public void HeaderToArray()
+    public void DomainToArray()
     {
         _a.ToArray();
     }

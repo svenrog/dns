@@ -107,14 +107,14 @@ namespace DNS.Protocol
         public byte[] ToArray()
         {
             UpdateHeader();
-            ByteStream result = new(Size);
+            ByteArrayBuilder builder = new(Size);
 
-            result
+            builder
                 .Append(_header.ToArray())
                 .Append(_questions.Select(q => q.ToArray()))
                 .Append(_additional.Select(a => a.ToArray()));
 
-            return result.ToArray();
+            return builder.Build();
         }
 
         public override string ToString()

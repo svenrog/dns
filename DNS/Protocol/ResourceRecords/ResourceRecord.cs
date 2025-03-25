@@ -50,12 +50,16 @@ namespace DNS.Protocol.ResourceRecords
         {
             Domain domain = Domain.FromArray(message, offset, out offset);
 
-            byte[] data = new byte[Tail.SIZE];
-            Array.Copy(message, offset, data, 0, data.Length);
+            Span<byte> slice = stackalloc byte[Tail.SIZE];
 
-            Tail tail = Tail.CreateFromArray(data);
+            message
+                .AsSpan()
+                .Slice(offset, Tail.SIZE)
+                .CopyTo(slice);
 
-            data = new byte[tail.DataLength];
+            var tail = Tail.CreateFromSpan(slice);
+
+            var data = new byte[tail.DataLength];
             offset += Tail.SIZE;
             Array.Copy(message, offset, data, 0, data.Length);
 
@@ -107,7 +111,7 @@ namespace DNS.Protocol.ResourceRecords
 
         public byte[] ToArray()
         {
-            ByteStream result = new(Size);
+            ByteArrayBuilder builder = new(Size);
 
             Tail tail = new()
             {
@@ -117,12 +121,12 @@ namespace DNS.Protocol.ResourceRecords
                 DataLength = _data.Length
             };
 
-            result
+            builder
                 .Append(_domain.ToArray())
                 .Append(tail.ToArray())
                 .Append(_data);
 
-            return result.ToArray();
+            return builder.Build();
         }
 
         public override string ToString()
@@ -132,7 +136,7 @@ namespace DNS.Protocol.ResourceRecords
 
         // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        internal struct Tail
+        private struct Tail
         {
             public const int SIZE = 10;
 
@@ -141,14 +145,14 @@ namespace DNS.Protocol.ResourceRecords
             private uint _ttl;
             private ushort _dataLength;
 
-            public static Tail CreateFromArray(byte[] tail)
+            public static Tail CreateFromSpan(Span<byte> tail)
             {
                 if (tail.Length < SIZE)
                 {
                     throw new ArgumentException("Tail length too small");
                 }
 
-                ConvertEndianness(tail);
+                ConvertEndianness(ref tail);
 
                 return MemoryMarshal.Read<Tail>(tail);
             }
@@ -162,22 +166,20 @@ namespace DNS.Protocol.ResourceRecords
                 Unsafe.As<byte, uint>(ref span[4]) = _ttl;
                 Unsafe.As<byte, ushort>(ref span[8]) = _dataLength;
 
-                var buffer = span.ToArray();
+                ConvertEndianness(ref span);
 
-                ConvertEndianness(buffer);
-
-                return buffer;
+                return span.ToArray();
             }
 
-            private static void ConvertEndianness(byte[] bytes)
+            private static void ConvertEndianness(ref Span<byte> bytes)
             {
                 if (!BitConverter.IsLittleEndian) return;
 
                 // Manual endian conversion
-                Array.Reverse(bytes, 0, sizeof(ushort));
-                Array.Reverse(bytes, 2, sizeof(ushort));
-                Array.Reverse(bytes, 4, sizeof(uint));
-                Array.Reverse(bytes, 8, sizeof(ushort));
+                bytes.Slice(0, sizeof(ushort)).Reverse();
+                bytes.Slice(2, sizeof(ushort)).Reverse();
+                bytes.Slice(4, sizeof(uint)).Reverse();
+                bytes.Slice(8, sizeof(ushort)).Reverse();
             }
 
             public RecordType Type

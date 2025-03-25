@@ -147,7 +147,7 @@ namespace DNS.Benchmark.Baseline.Protocol.ResourceRecords
 
                 ConvertEndianness(tail);
 
-                return BaselineStruct.PinStruct<Tail>(tail);
+                return BaselineStruct.GetStruct<Tail>(tail, 0, SIZE);
             }
 
             public readonly byte[] ToArray()

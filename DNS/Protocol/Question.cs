@@ -38,10 +38,14 @@ namespace DNS.Protocol
         {
             Domain domain = Domain.FromArray(message, offset, out offset);
 
-            byte[] data = new byte[Tail.SIZE];
-            Array.Copy(message, offset, data, 0, Tail.SIZE);
+            Span<byte> slice = stackalloc byte[Tail.SIZE];
 
-            Tail tail = Tail.CreateFromArray(data);
+            message
+                .AsSpan()
+                .Slice(offset, Tail.SIZE)
+                .CopyTo(slice);
+
+            Tail tail = Tail.CreateFromSpan(slice);
 
             endOffset = offset + Tail.SIZE;
 
@@ -80,10 +84,9 @@ namespace DNS.Protocol
             get { return _domain.Size + Tail.SIZE; }
         }
 
-
         public byte[] ToArray()
         {
-            ByteStream result = new(Size);
+            ByteArrayBuilder builder = new(Size);
 
             Tail tail = new()
             {
@@ -91,11 +94,11 @@ namespace DNS.Protocol
                 Class = Class
             };
 
-            result
+            builder
                 .Append(_domain.ToArray())
                 .Append(tail.ToArray());
 
-            return result.ToArray();
+            return builder.Build();
         }
 
         public override string ToString()
@@ -105,21 +108,21 @@ namespace DNS.Protocol
 
         // Endianness.Big
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
-        internal struct Tail
+        private struct Tail
         {
             public const int SIZE = 4;
 
             private ushort _type;
             private ushort _class;
 
-            public static Tail CreateFromArray(byte[] tail)
+            public static Tail CreateFromSpan(Span<byte> tail)
             {
                 if (tail.Length < SIZE)
                 {
-                    throw new ArgumentException("Header length too small");
+                    throw new ArgumentException("Tail length too small");
                 }
 
-                ConvertEndianness(tail);
+                ConvertEndianness(ref tail);
 
                 return MemoryMarshal.Read<Tail>(tail);
             }
@@ -131,20 +134,18 @@ namespace DNS.Protocol
                 Unsafe.As<byte, ushort>(ref span[0]) = _type;
                 Unsafe.As<byte, ushort>(ref span[2]) = _class;
 
-                var buffer = span.ToArray();
+                ConvertEndianness(ref span);
 
-                ConvertEndianness(buffer);
-
-                return buffer;
+                return span.ToArray();
             }
 
-            private static void ConvertEndianness(byte[] bytes)
+            private static void ConvertEndianness(ref Span<byte> bytes)
             {
                 if (!BitConverter.IsLittleEndian) return;
 
                 // Manual endian conversion
-                Array.Reverse(bytes, 0, sizeof(ushort));
-                Array.Reverse(bytes, 2, sizeof(ushort));
+                bytes.Slice(0, sizeof(ushort)).Reverse();
+                bytes.Slice(2, sizeof(ushort)).Reverse();
             }
 
             public RecordType Type

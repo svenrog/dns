@@ -10,6 +10,7 @@ namespace DNS.Protocol
 {
     public class Domain : IComparable<Domain>
     {
+        private const int _compressionIterationMax = 1000;
         private const byte _asciiUppercaseFirst = 65;
         private const byte _asciiUppercaseLast = 90;
         private const byte _asciiLowercaseFirst = 97;
@@ -23,20 +24,20 @@ namespace DNS.Protocol
             return new Domain(domain);
         }
 
-        public static Domain FromArray(byte[] message, int offset)
+        public static Domain FromArray(ReadOnlySpan<byte> message, int offset)
         {
             return FromArray(message, offset, out _);
         }
 
-        public static Domain FromArray(byte[] message, int offset, out int endOffset)
+        public static Domain FromArray(ReadOnlySpan<byte> message, int offset, out int endOffset)
         {
             endOffset = 0;
 
-            IList<byte[]> labels = [];
-            HashSet<int> visitedOffsetPointers = [];
+            List<byte[]> labels = [];
 
             bool endOffsetAssigned = false;
             byte lengthOrPointer;
+            int iterations = 0;
 
             while ((lengthOrPointer = message[offset++]) > 0)
             {
@@ -52,12 +53,8 @@ namespace DNS.Protocol
                     ushort pointer = lengthOrPointer.GetBitValueAt(0, 6);
                     offset = (pointer << 8) | message[offset];
 
-                    if (visitedOffsetPointers.Contains(offset))
-                    {
+                    if (iterations++ > _compressionIterationMax)
                         throw new ArgumentException("Compression pointer loop detected");
-                    }
-
-                    visitedOffsetPointers.Add(offset);
 
                     continue;
                 }
@@ -68,8 +65,7 @@ namespace DNS.Protocol
                 }
 
                 byte length = lengthOrPointer;
-                byte[] label = new byte[length];
-                Array.Copy(message, offset, label, 0, length);
+                byte[] label = message.Slice(offset, length).ToArray();
 
                 labels.Add(label);
 
@@ -153,7 +149,31 @@ namespace DNS.Protocol
             _labels = [.. labels.Select(encoding.GetBytes)];
         }
 
-        public Domain(string domain) : this(domain.Split('.')) { }
+        public Domain(string domain)
+        {
+            var buffer = domain.AsSpan();
+            var ranges = buffer.Split('.');
+            var count = 0;
+
+            foreach (Range _ in ranges)
+            {
+                count++;
+            }
+
+            _labels = new byte[count][];
+            var i = 0;
+
+            foreach (var range in ranges)
+            {
+                var slice = buffer[range.Start.Value..range.End.Value];
+                var target = new byte[Encoding.ASCII.GetByteCount(slice)];
+
+                Encoding.ASCII.GetBytes(slice, target);
+
+                _labels[i] = target;
+                i++;
+            }
+        }
 
         public Domain(string[] labels) : this(labels, Encoding.ASCII) { }
 
