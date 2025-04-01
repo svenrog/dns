@@ -56,7 +56,7 @@ namespace DNS.Tests.Protocol
             Domain domain2 = new(Helper.GetArray("dr", "dk"));
             Question question2 = new(domain2, RecordType.A, RecordClass.ANY);
 
-            Request request = new(header, new List<Question>(), new List<IResourceRecord>())
+            Request request = new(header, [], [])
             {
                 Id = 1,
                 RecursionDesired = true
