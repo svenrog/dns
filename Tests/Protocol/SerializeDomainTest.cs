@@ -1,11 +1,15 @@
-﻿using Xunit;
-using DNS.Protocol;
+﻿using DNS.Protocol;
+using System.Text;
+using Xunit;
 
-namespace DNS.Tests.Protocol {
+namespace DNS.Tests.Protocol
+{
 
-    public class SerializeDomainTest {
+    public class SerializeDomainTest
+    {
         [Fact]
-        public void EmptyDomain() {
+        public void EmptyDomain()
+        {
             Domain domain = new(Helper.GetArray<string>());
             byte[] content = Helper.ReadFixture("Domain", "empty-label");
 
@@ -14,7 +18,8 @@ namespace DNS.Tests.Protocol {
         }
 
         [Fact]
-        public void DomainWithSingleLabel() {
+        public void DomainWithSingleLabel()
+        {
             Domain domain = new(Helper.GetArray("www"));
             byte[] content = Helper.ReadFixture("Domain", "www-label");
 
@@ -23,7 +28,8 @@ namespace DNS.Tests.Protocol {
         }
 
         [Fact]
-        public void DomainWithMultipleLabels() {
+        public void DomainWithMultipleLabels()
+        {
             Domain domain = new(Helper.GetArray("www", "google", "com"));
             byte[] content = Helper.ReadFixture("Domain", "www.google.com-label");
 
@@ -32,10 +38,9 @@ namespace DNS.Tests.Protocol {
         }
 
         [Fact]
-        public void DomainWithSingleBinaryLabel() {
-            Domain domain = new(Helper.GetArray<byte[]>(
-                Helper.GetArray<byte>(119, 119, 119)
-            ));
+        public void DomainWithSingleBinaryLabel()
+        {
+            Domain domain = new("www");
             byte[] content = Helper.ReadFixture("Domain", "www-label");
 
             Assert.Equal(content, domain.ToArray());
@@ -43,11 +48,12 @@ namespace DNS.Tests.Protocol {
         }
 
         [Fact]
-        public void DomainWithMultipleBinaryLabels() {
-            Domain domain = new(Helper.GetArray<byte[]>(
-                Helper.GetArray<byte>(119, 119, 119),
-                Helper.GetArray<byte>(103, 111, 111, 103, 108, 101),
-                Helper.GetArray<byte>(99, 111, 109)
+        public void DomainWithMultipleBinaryLabels()
+        {
+            Domain domain = new(Helper.GetArray(
+                Encoding.ASCII.GetString(Helper.GetArray<byte>(119, 119, 119)),
+                Encoding.ASCII.GetString(Helper.GetArray<byte>(103, 111, 111, 103, 108, 101)),
+                Encoding.ASCII.GetString(Helper.GetArray<byte>(99, 111, 109))
             ));
             byte[] content = Helper.ReadFixture("Domain", "www.google.com-label");
 

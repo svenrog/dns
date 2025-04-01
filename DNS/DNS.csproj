@@ -1,31 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>.net9.0</TargetFrameworks>
-    <Description>Library for parsing and serializing DNS messages. Includes a basic DNS client and server.</Description>
-    <Company>Mirza Kapetanovic</Company>
-    <Authors>Mirza Kapetanovic, Svenrog</Authors>
-    <AssemblyVersion>8.0.0.0</AssemblyVersion>
-    <FileVersion>8.0.0.0</FileVersion>
-    <Version>8.0.0</Version>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<PublishAot>true</PublishAot>
-	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PackageTags>dns request response client server</PackageTags>
-    <PackageProjectUrl>https://github.com/kapetan/dns</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Properties\**" />
-    <EmbeddedResource Remove="Properties\**" />
-    <None Remove="Properties\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFrameworks>.net9.0;.net10.0</TargetFrameworks>
+		<Description>Library for parsing and serializing DNS messages. Includes a basic DNS client and server.</Description>
+		<Company>Mirza Kapetanovic</Company>
+		<Authors>Mirza Kapetanovic, Svenrog</Authors>
+		<AssemblyVersion>10.0.0.0</AssemblyVersion>
+		<FileVersion>10.0.0.0</FileVersion>
+		<Version>10.0.0</Version>
+		<PublishAot>true</PublishAot>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<PackageTags>dns request response client server</PackageTags>
+		<PackageProjectUrl>https://github.com/kapetan/dns</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+		<None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>

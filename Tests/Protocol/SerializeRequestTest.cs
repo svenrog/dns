@@ -1,14 +1,17 @@
-﻿using System;
+﻿using DNS.Protocol;
+using DNS.Protocol.ResourceRecords;
+using System;
 using System.Collections.Generic;
 using Xunit;
-using DNS.Protocol;
-using DNS.Protocol.ResourceRecords;
 
-namespace DNS.Tests.Protocol {
+namespace DNS.Tests.Protocol
+{
 
-    public class SerializeRequestTest {
+    public class SerializeRequestTest
+    {
         [Fact]
-        public void BasicQuestionRequestWithEmptyHeader() {
+        public void BasicQuestionRequestWithEmptyHeader()
+        {
             Header header = new();
 
             Domain domain = new(Helper.GetArray<string>());
@@ -23,7 +26,8 @@ namespace DNS.Tests.Protocol {
         }
 
         [Fact]
-        public void SingleQuestionRequestWithHeader() {
+        public void SingleQuestionRequestWithHeader()
+        {
             Header header = new();
 
             Domain domain = new(Helper.GetArray("www", "google", "com"));
@@ -42,7 +46,8 @@ namespace DNS.Tests.Protocol {
         }
 
         [Fact]
-        public void RequestWithMultipleQuestions() {
+        public void RequestWithMultipleQuestions()
+        {
             Header header = new();
 
             Domain domain1 = new(Helper.GetArray("www", "google", "com"));
@@ -65,14 +70,15 @@ namespace DNS.Tests.Protocol {
         }
 
         [Fact]
-        public void RequestWithAdditionalRecords() {
+        public void RequestWithAdditionalRecords()
+        {
             Header header = new();
 
             Domain domain1 = new(Helper.GetArray("google", "com"));
-            Domain domain2 = new(Helper.GetArray<byte[]>());
+            Domain domain2 = new(string.Empty);
             Question question = new(domain1, RecordType.A, RecordClass.IN);
             ResourceRecord record = new(domain2, Helper.GetArray<byte>(),
-                RecordType.OPT, (RecordClass) 4096, TimeSpan.FromSeconds(0));
+                RecordType.OPT, (RecordClass)4096, TimeSpan.FromSeconds(0));
 
             Request request = new(header,
                 Helper.GetList(question),
