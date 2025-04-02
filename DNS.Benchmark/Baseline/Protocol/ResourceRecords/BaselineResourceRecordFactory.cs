@@ -35,10 +35,10 @@ public static class BaselineResourceRecordFactory
             BaselineRecordType.A or BaselineRecordType.AAAA => new BaselineIPAddressResourceRecord(record),
             BaselineRecordType.NS => new BaselineNameServerResourceRecord(record, message, dataOffset),
             BaselineRecordType.CNAME => new BaselineCanonicalNameResourceRecord(record, message, dataOffset),
-            BaselineRecordType.SOA => new StartOfAuthorityResourceRecord(record, message, dataOffset),
+            BaselineRecordType.SOA => new BaselineStartOfAuthorityResourceRecord(record, message, dataOffset),
             BaselineRecordType.PTR => new BaselinePointerResourceRecord(record, message, dataOffset),
             BaselineRecordType.MX => new BaselineMailExchangeResourceRecord(record, message, dataOffset),
-            BaselineRecordType.TXT => new TextResourceRecord(record),
+            BaselineRecordType.TXT => new BaselineTextResourceRecord(record),
             BaselineRecordType.SRV => new BaselineServiceResourceRecord(record, message, dataOffset),
             _ => record,
         };

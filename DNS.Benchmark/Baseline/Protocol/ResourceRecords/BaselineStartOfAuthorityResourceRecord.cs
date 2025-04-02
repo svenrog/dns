@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace DNS.Benchmark.Baseline.Protocol.ResourceRecords;
 
-public class StartOfAuthorityResourceRecord : BaselineBaseResourceRecord
+public class BaselineStartOfAuthorityResourceRecord : BaselineBaseResourceRecord
 {
     private static BaselineResourceRecord Create(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible, long serial,
             TimeSpan refresh, TimeSpan retry, TimeSpan expire, TimeSpan minTtl, TimeSpan ttl)
@@ -29,7 +29,7 @@ public class StartOfAuthorityResourceRecord : BaselineBaseResourceRecord
         return new BaselineResourceRecord(domain, data.ToArray(), BaselineRecordType.SOA, BaselineRecordClass.IN, ttl);
     }
 
-    public StartOfAuthorityResourceRecord(IBaselineResourceRecord record, byte[] message, int dataOffset)
+    public BaselineStartOfAuthorityResourceRecord(IBaselineResourceRecord record, byte[] message, int dataOffset)
         : base(record)
     {
         MasterDomainName = BaselineDomain.FromArray(message, dataOffset, out dataOffset);
@@ -47,7 +47,7 @@ public class StartOfAuthorityResourceRecord : BaselineBaseResourceRecord
         MinimumTimeToLive = tail.MinimumTimeToLive;
     }
 
-    public StartOfAuthorityResourceRecord(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible, long serial,
+    public BaselineStartOfAuthorityResourceRecord(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible, long serial,
             TimeSpan refresh, TimeSpan retry, TimeSpan expire, TimeSpan minTtl, TimeSpan ttl = default) :
         base(Create(domain, master, responsible, serial, refresh, retry, expire, minTtl, ttl))
     {
@@ -61,7 +61,7 @@ public class StartOfAuthorityResourceRecord : BaselineBaseResourceRecord
         MinimumTimeToLive = minTtl;
     }
 
-    public StartOfAuthorityResourceRecord(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible,
+    public BaselineStartOfAuthorityResourceRecord(BaselineDomain domain, BaselineDomain master, BaselineDomain responsible,
             Options options = default, TimeSpan ttl = default) :
         this(domain, master, responsible, options.SerialNumber, options.RefreshInterval, options.RetryInterval,
                 options.ExpireInterval, options.MinimumTimeToLive, ttl)
