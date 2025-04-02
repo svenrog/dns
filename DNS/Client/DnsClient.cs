@@ -8,97 +8,87 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DNS.Client
+namespace DNS.Client;
+
+public class DnsClient
 {
-    public class DnsClient
+    private const int _defaultPort = 53;
+
+    private readonly IRequestResolver _resolver;
+
+    public DnsClient(IPEndPoint dns) :
+        this(new UdpRequestResolver(dns, new TcpRequestResolver(dns)))
+    { }
+
+    public DnsClient(IPAddress ip, int port = _defaultPort) :
+        this(new IPEndPoint(ip, port))
+    { }
+
+    public DnsClient(string ip, int port = _defaultPort) :
+        this(IPAddress.Parse(ip), port)
+    { }
+
+    public DnsClient(IRequestResolver resolver)
     {
-        private const int DEFAULT_PORT = 53;
+        _resolver = resolver;
+    }
 
-        private readonly IRequestResolver _resolver;
+    public ClientRequest FromArray(byte[] message)
+    {
+        Request request = Request.FromArray(message);
+        return new ClientRequest(_resolver, request);
+    }
 
-        public DnsClient(IPEndPoint dns) :
-            this(new UdpRequestResolver(dns, new TcpRequestResolver(dns)))
-        { }
+    public ClientRequest Create(IRequest? request = null)
+    {
+        return new ClientRequest(_resolver, request);
+    }
 
-        public DnsClient(IPAddress ip, int port = DEFAULT_PORT) :
-            this(new IPEndPoint(ip, port))
-        { }
+    public async Task<IList<IPAddress>> Lookup(string domain, RecordType type = RecordType.A, CancellationToken cancellationToken = default)
+    {
+        if (type != RecordType.A && type != RecordType.AAAA)
+            throw new ArgumentException("Invalid record type " + type);
 
-        public DnsClient(string ip, int port = DEFAULT_PORT) :
-            this(IPAddress.Parse(ip), port)
-        { }
+        IResponse response = await Resolve(domain, type, cancellationToken).ConfigureAwait(false);
+        List<IPAddress> ips = [.. response.AnswerRecords
+            .Where(r => r.Type == type)
+            .Cast<IPAddressResourceRecord>()
+            .Select(r => r.IPAddress)];
 
-        public DnsClient(IRequestResolver resolver)
-        {
-            _resolver = resolver;
-        }
+        if (ips.Count == 0)
+            throw new ResponseException(response, "No matching records");
 
-        public ClientRequest FromArray(byte[] message)
-        {
-            Request request = Request.FromArray(message);
-            return new ClientRequest(_resolver, request);
-        }
+        return ips;
+    }
 
-        public ClientRequest Create(IRequest request = null)
-        {
-            return new ClientRequest(_resolver, request);
-        }
+    public Task<string> Reverse(string ip, CancellationToken cancellationToken = default)
+    {
+        return Reverse(IPAddress.Parse(ip), cancellationToken);
+    }
 
-        public async Task<IList<IPAddress>> Lookup(string domain, RecordType type = RecordType.A, CancellationToken cancellationToken = default)
-        {
-            if (type != RecordType.A && type != RecordType.AAAA)
-            {
-                throw new ArgumentException("Invalid record type " + type);
-            }
+    public async Task<string> Reverse(IPAddress ip, CancellationToken cancellationToken = default)
+    {
+        IResponse response = await Resolve(Domain.PointerName(ip), RecordType.PTR, cancellationToken).ConfigureAwait(false);
+        IResourceRecord ptr = response.AnswerRecords.FirstOrDefault(r => r.Type == RecordType.PTR)
+            ?? throw new ResponseException(response, "No matching records");
 
-            IResponse response = await Resolve(domain, type, cancellationToken).ConfigureAwait(false);
-            IList<IPAddress> ips = response.AnswerRecords
-                .Where(r => r.Type == type)
-                .Cast<IPAddressResourceRecord>()
-                .Select(r => r.IPAddress)
-                .ToList();
+        return ((PointerResourceRecord)ptr).PointerDomainName.ToString();
+    }
 
-            if (ips.Count == 0)
-            {
-                throw new ResponseException(response, "No matching records");
-            }
+    public Task<IResponse> Resolve(string domain, RecordType type, CancellationToken cancellationToken = default)
+    {
+        return Resolve(new Domain(domain), type, cancellationToken);
+    }
 
-            return ips;
-        }
+    public Task<IResponse> Resolve(Domain domain, RecordType type, CancellationToken cancellationToken = default)
+    {
+        ClientRequest request = Create();
+        Question question = new(domain, type);
 
-        public Task<string> Reverse(string ip, CancellationToken cancellationToken = default)
-        {
-            return Reverse(IPAddress.Parse(ip), cancellationToken);
-        }
+        request.Questions.Add(question);
+        request.OperationCode = OperationCode.Query;
+        request.RecursionDesired = true;
 
-        public async Task<string> Reverse(IPAddress ip, CancellationToken cancellationToken = default)
-        {
-            IResponse response = await Resolve(Domain.PointerName(ip), RecordType.PTR, cancellationToken).ConfigureAwait(false);
-            IResourceRecord ptr = response.AnswerRecords.FirstOrDefault(r => r.Type == RecordType.PTR);
-
-            if (ptr == null)
-            {
-                throw new ResponseException(response, "No matching records");
-            }
-
-            return ((PointerResourceRecord)ptr).PointerDomainName.ToString();
-        }
-
-        public Task<IResponse> Resolve(string domain, RecordType type, CancellationToken cancellationToken = default)
-        {
-            return Resolve(new Domain(domain), type, cancellationToken);
-        }
-
-        public Task<IResponse> Resolve(Domain domain, RecordType type, CancellationToken cancellationToken = default)
-        {
-            ClientRequest request = Create();
-            Question question = new Question(domain, type);
-
-            request.Questions.Add(question);
-            request.OperationCode = OperationCode.Query;
-            request.RecursionDesired = true;
-
-            return request.Resolve(cancellationToken);
-        }
+        return request.Resolve(cancellationToken);
     }
 }

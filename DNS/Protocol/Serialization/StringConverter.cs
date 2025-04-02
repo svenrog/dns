@@ -11,8 +11,16 @@ public abstract class StringConverter<T> : JsonConverter<T>
         throw new NotSupportedException();
     }
 
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.ToString());
+        var stringValue = value?.ToString();
+        if (stringValue == null)
+        {
+            writer.WriteNullValue();
+        }
+        else
+        {
+            writer.WriteStringValue(stringValue);
+        }
     }
 }

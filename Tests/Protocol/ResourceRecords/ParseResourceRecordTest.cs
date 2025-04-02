@@ -4,170 +4,169 @@ using Xunit;
 using DNS.Protocol;
 using DNS.Protocol.ResourceRecords;
 
-namespace DNS.Tests.Protocol.ResourceRecords {
+namespace DNS.Tests.Protocol.ResourceRecords; 
 
-    public class ParseResourceRecordTest {
-        [Fact]
-        public void BasicResourceRecordWithEmptyDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_basic");
+public class ParseResourceRecordTest {
+    [Fact]
+    public void BasicResourceRecordWithEmptyDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_basic");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(11, record.Size);
-            Assert.Equal(11, endOffset);
-        }
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(11, record.Size);
+        Assert.Equal(11, endOffset);
+    }
 
-        [Fact]
-        public void BasicResourceRecordWithMultipleLabelDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "www.google.com_basic");
+    [Fact]
+    public void BasicResourceRecordWithMultipleLabelDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "www.google.com_basic");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("www.google.com", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(26, record.Size);
-            Assert.Equal(26, endOffset);
-        }
+        Assert.Equal("www.google.com", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(26, record.Size);
+        Assert.Equal(26, endOffset);
+    }
 
-        [Fact]
-        public void DataResourceRecordWithEmptyDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_data");
+    [Fact]
+    public void DataResourceRecordWithEmptyDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_data");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(1, 1), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(13, record.Size);
-            Assert.Equal(13, endOffset);
-        }
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(1, 1), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(13, record.Size);
+        Assert.Equal(13, endOffset);
+    }
 
-        [Fact]
-        public void CNameResourceRecordWithEmptyDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_cname");
+    [Fact]
+    public void CNameResourceRecordWithEmptyDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_cname");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(), record.Data);
-            Assert.Equal(RecordType.CNAME, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(11, record.Size);
-            Assert.Equal(11, endOffset);
-        }
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(), record.Data);
+        Assert.Equal(RecordType.CNAME, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(11, record.Size);
+        Assert.Equal(11, endOffset);
+    }
 
-        [Fact]
-        public void AnyResourceRecordWithEmptyDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_any");
+    [Fact]
+    public void AnyResourceRecordWithEmptyDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_any");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.ANY, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(11, record.Size);
-            Assert.Equal(11, endOffset);
-        }
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.ANY, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(11, record.Size);
+        Assert.Equal(11, endOffset);
+    }
 
-        [Fact]
-        public void TtlResourceRecordWithEmptyDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_ttl");
+    [Fact]
+    public void TtlResourceRecordWithEmptyDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_ttl");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
-            Assert.Equal(11, record.Size);
-            Assert.Equal(11, endOffset);
-        }
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
+        Assert.Equal(11, record.Size);
+        Assert.Equal(11, endOffset);
+    }
 
-        [Fact]
-        public void AllSetResourceRecordWithMultipleLabelDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "www.google.com_all");
+    [Fact]
+    public void AllSetResourceRecordWithMultipleLabelDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "www.google.com_all");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("www.google.com", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(1, 1), record.Data);
-            Assert.Equal(RecordType.CNAME, record.Type);
-            Assert.Equal(RecordClass.ANY, record.Class);
-            Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
-            Assert.Equal(28, record.Size);
-            Assert.Equal(28, endOffset);
-        }
+        Assert.Equal("www.google.com", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(1, 1), record.Data);
+        Assert.Equal(RecordType.CNAME, record.Type);
+        Assert.Equal(RecordClass.ANY, record.Class);
+        Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
+        Assert.Equal(28, record.Size);
+        Assert.Equal(28, endOffset);
+    }
 
-        [Fact]
-        public void MultipleResourceRecords() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "multiple");
-            IList<ResourceRecord> records = ResourceRecord.GetAllFromArray(content, 0, 3, out int endOffset);
+    [Fact]
+    public void MultipleResourceRecords() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "multiple");
+        IList<ResourceRecord> records = ResourceRecord.GetAllFromArray(content, 0, 3, out int endOffset);
 
-            Assert.Equal(3, records.Count);
-            Assert.Equal(60, endOffset);
+        Assert.Equal(3, records.Count);
+        Assert.Equal(60, endOffset);
 
-            ResourceRecord record = records[0];
+        ResourceRecord record = records[0];
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(11, record.Size);
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(11, record.Size);
 
-            record = records[1];
+        record = records[1];
 
-            Assert.Equal("www.google.com", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(1, 1), record.Data);
-            Assert.Equal(RecordType.CNAME, record.Type);
-            Assert.Equal(RecordClass.ANY, record.Class);
-            Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
-            Assert.Equal(28, record.Size);
+        Assert.Equal("www.google.com", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(1, 1), record.Data);
+        Assert.Equal(RecordType.CNAME, record.Type);
+        Assert.Equal(RecordClass.ANY, record.Class);
+        Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
+        Assert.Equal(28, record.Size);
 
-            record = records[2];
+        record = records[2];
 
-            Assert.Equal("dr.dk", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(1, 1, 1, 1), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(21, record.Size);
-        }
+        Assert.Equal("dr.dk", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(1, 1, 1, 1), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(21, record.Size);
+    }
 
-        [Fact]
-        public void SrvResourceRecordWithEmptyDomain() {
-            byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_srv");
+    [Fact]
+    public void SrvResourceRecordWithEmptyDomain() {
+        byte[] content = Helper.ReadFixture("ResourceRecord", "empty-domain_srv");
 
-            ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
+        ResourceRecord record = ResourceRecord.FromArray(content, 0, out int endOffset);
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(0, 10, 0, 60, 31, 144, 7, 101, 120, 97, 109, 112, 108, 101, 3, 99, 111, 109, 0), record.Data);
-            Assert.Equal(RecordType.SRV, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-            Assert.Equal(30, record.Size);
-            Assert.Equal(30, endOffset);
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(0, 10, 0, 60, 31, 144, 7, 101, 120, 97, 109, 112, 108, 101, 3, 99, 111, 109, 0), record.Data);
+        Assert.Equal(RecordType.SRV, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal(30, record.Size);
+        Assert.Equal(30, endOffset);
 
-            ServiceResourceRecord srv = new(record, content, 11);
+        ServiceResourceRecord srv = new(record, content, 11);
 
-            Assert.Equal(10, srv.Priority);
-            Assert.Equal(60, srv.Weight);
-            Assert.Equal(8080, srv.Port);
-            Assert.Equal("example.com", srv.Target.ToString());
-        }
+        Assert.Equal(10, srv.Priority);
+        Assert.Equal(60, srv.Weight);
+        Assert.Equal(8080, srv.Port);
+        Assert.Equal("example.com", srv.Target.ToString());
     }
 }

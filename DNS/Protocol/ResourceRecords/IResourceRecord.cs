@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace DNS.Protocol.ResourceRecords
+namespace DNS.Protocol.ResourceRecords;
+
+public interface IResourceRecord : IMessageEntry
 {
-    public interface IResourceRecord : IMessageEntry
-    {
-        TimeSpan TimeToLive { get; }
-        int DataLength { get; }
-        byte[] Data { get; }
-    }
+    TimeSpan TimeToLive { get; }
+    int DataLength { get; }
+    byte[] Data { get; }
 }

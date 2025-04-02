@@ -3,108 +3,107 @@ using Xunit;
 using DNS.Protocol;
 using DNS.Protocol.ResourceRecords;
 
-namespace DNS.Tests.Protocol {
+namespace DNS.Tests.Protocol; 
 
-    public class ParseResponseTest {
-        [Fact]
-        public void BasicQuestionResponseWithEmptyHeader() {
-            byte[] content = Helper.ReadFixture("Response", "empty-header_basic");
-            Response response = Response.FromArray(content);
+public class ParseResponseTest {
+    [Fact]
+    public void BasicQuestionResponseWithEmptyHeader() {
+        byte[] content = Helper.ReadFixture("Response", "empty-header_basic");
+        Response response = Response.FromArray(content);
 
-            Assert.Equal(0, response.Id);
-            Assert.False(response.RecursionAvailable);
-            Assert.Equal(62, response.Size);
-            Assert.Single(response.Questions);
-            Assert.Single(response.AnswerRecords);
-            Assert.Single(response.AuthorityRecords);
-            Assert.Single(response.AdditionalRecords);
+        Assert.Equal(0, response.Id);
+        Assert.False(response.RecursionAvailable);
+        Assert.Equal(62, response.Size);
+        Assert.Single(response.Questions);
+        Assert.Single(response.AnswerRecords);
+        Assert.Single(response.AuthorityRecords);
+        Assert.Single(response.AdditionalRecords);
 
-            Question question = response.Questions[0];
+        Question question = response.Questions[0];
 
-            Assert.Equal(RecordType.A, question.Type);
-            Assert.Equal(RecordClass.IN, question.Class);
-            Assert.Equal("", question.Name.ToString());
+        Assert.Equal(RecordType.A, question.Type);
+        Assert.Equal(RecordClass.IN, question.Class);
+        Assert.Equal("", question.Name.ToString());
 
-            IResourceRecord record = response.AnswerRecords[0];
+        IResourceRecord record = response.AnswerRecords[0];
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(0, 0, 0, 0), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(0, 0, 0, 0), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
 
-            record = response.AuthorityRecords[0];
+        record = response.AuthorityRecords[0];
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(0, 0, 0, 0), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(0, 0, 0, 0), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
 
-            record = response.AdditionalRecords[0];
+        record = response.AdditionalRecords[0];
 
-            Assert.Equal("", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(0, 0, 0, 0), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(new TimeSpan(0), record.TimeToLive);
-        }
+        Assert.Equal("", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(0, 0, 0, 0), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(new TimeSpan(0), record.TimeToLive);
+    }
 
-        [Fact]
-        public void RequestWithHeaderAndResourceRecords() {
-            byte[] content = Helper.ReadFixture("Response", "id-ra_all");
-            Response response = Response.FromArray(content);
+    [Fact]
+    public void RequestWithHeaderAndResourceRecords() {
+        byte[] content = Helper.ReadFixture("Response", "id-ra_all");
+        Response response = Response.FromArray(content);
 
-            Assert.Equal(1, response.Id);
-            Assert.True(response.RecursionAvailable);
-            Assert.Equal(101, response.Size);
-            Assert.Single(response.Questions);
-            Assert.Single(response.AnswerRecords);
-            Assert.Single(response.AuthorityRecords);
-            Assert.Single(response.AdditionalRecords);
+        Assert.Equal(1, response.Id);
+        Assert.True(response.RecursionAvailable);
+        Assert.Equal(101, response.Size);
+        Assert.Single(response.Questions);
+        Assert.Single(response.AnswerRecords);
+        Assert.Single(response.AuthorityRecords);
+        Assert.Single(response.AdditionalRecords);
 
-            Question question = response.Questions[0];
+        Question question = response.Questions[0];
 
-            Assert.Equal(RecordType.A, question.Type);
-            Assert.Equal(RecordClass.IN, question.Class);
-            Assert.Equal("www.google.com", question.Name.ToString());
+        Assert.Equal(RecordType.A, question.Type);
+        Assert.Equal(RecordClass.IN, question.Class);
+        Assert.Equal("www.google.com", question.Name.ToString());
 
-            IResourceRecord record = response.AnswerRecords[0];
+        IResourceRecord record = response.AnswerRecords[0];
 
-            Assert.Equal("www.google.com", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(3, 119, 119, 119, 0), record.Data);
-            Assert.Equal(RecordType.CNAME, record.Type);
-            Assert.Equal(RecordClass.IN, record.Class);
-            Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
+        Assert.Equal("www.google.com", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(3, 119, 119, 119, 0), record.Data);
+        Assert.Equal(RecordType.CNAME, record.Type);
+        Assert.Equal(RecordClass.IN, record.Class);
+        Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
 
-            record = response.AuthorityRecords[0];
+        record = response.AuthorityRecords[0];
 
-            Assert.Equal("dr.dk", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(1, 1, 1, 1), record.Data);
-            Assert.Equal(RecordType.A, record.Type);
-            Assert.Equal(RecordClass.ANY, record.Class);
-            Assert.Equal(TimeSpan.FromSeconds(0), record.TimeToLive);
+        Assert.Equal("dr.dk", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(1, 1, 1, 1), record.Data);
+        Assert.Equal(RecordType.A, record.Type);
+        Assert.Equal(RecordClass.ANY, record.Class);
+        Assert.Equal(TimeSpan.FromSeconds(0), record.TimeToLive);
 
-            record = response.AdditionalRecords[0];
+        record = response.AdditionalRecords[0];
 
-            Assert.Equal("www", record.Name.ToString());
-            Assert.Equal(Helper.GetArray<byte>(192, 12), record.Data);
-            Assert.Equal(RecordType.CNAME, record.Type);
-            Assert.Equal(RecordClass.ANY, record.Class);
-            Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
-        }
+        Assert.Equal("www", record.Name.ToString());
+        Assert.Equal(Helper.GetArray<byte>(192, 12), record.Data);
+        Assert.Equal(RecordType.CNAME, record.Type);
+        Assert.Equal(RecordClass.ANY, record.Class);
+        Assert.Equal(TimeSpan.FromSeconds(1), record.TimeToLive);
+    }
 
-        [Fact]
-        public void ResponseWithoutQuestion() {
-            byte[] content = Helper.ReadFixture("Response", "no-question");
-            Response response = Response.FromArray(content);
+    [Fact]
+    public void ResponseWithoutQuestion() {
+        byte[] content = Helper.ReadFixture("Response", "no-question");
+        Response response = Response.FromArray(content);
 
-            Assert.Equal(0, response.Id);
-            Assert.False(response.RecursionAvailable);
-            Assert.Empty(response.Questions);
-            Assert.Equal(5, response.AnswerRecords.Count);
-            Assert.Empty(response.AuthorityRecords);
-            Assert.Empty(response.AdditionalRecords);
-        }
+        Assert.Equal(0, response.Id);
+        Assert.False(response.RecursionAvailable);
+        Assert.Empty(response.Questions);
+        Assert.Equal(5, response.AnswerRecords.Count);
+        Assert.Empty(response.AuthorityRecords);
+        Assert.Empty(response.AdditionalRecords);
     }
 }

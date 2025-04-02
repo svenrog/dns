@@ -1,28 +1,27 @@
-﻿namespace DNS.Benchmark.Baseline.Protocol.Utils
+﻿namespace DNS.Benchmark.Baseline.Protocol.Utils;
+
+public static class BaselineByteExtensions
 {
-    public static class BaselineByteExtensions
+    public static byte GetBitValueAt(this byte b, byte offset, byte length)
     {
-        public static byte GetBitValueAt(this byte b, byte offset, byte length)
-        {
-            return (byte)(b >> offset & ~(0xff << length));
-        }
+        return (byte)(b >> offset & ~(0xff << length));
+    }
 
-        public static byte GetBitValueAt(this byte b, byte offset)
-        {
-            return b.GetBitValueAt(offset, 1);
-        }
+    public static byte GetBitValueAt(this byte b, byte offset)
+    {
+        return b.GetBitValueAt(offset, 1);
+    }
 
-        public static byte SetBitValueAt(this byte b, byte offset, byte length, byte value)
-        {
-            int mask = ~(0xff << length);
-            value = (byte)(value & mask);
+    public static byte SetBitValueAt(this byte b, byte offset, byte length, byte value)
+    {
+        int mask = ~(0xff << length);
+        value = (byte)(value & mask);
 
-            return (byte)(value << offset | b & ~(mask << offset));
-        }
+        return (byte)(value << offset | b & ~(mask << offset));
+    }
 
-        public static byte SetBitValueAt(this byte b, byte offset, byte value)
-        {
-            return b.SetBitValueAt(offset, 1, value);
-        }
+    public static byte SetBitValueAt(this byte b, byte offset, byte value)
+    {
+        return b.SetBitValueAt(offset, 1, value);
     }
 }

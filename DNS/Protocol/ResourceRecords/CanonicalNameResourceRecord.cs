@@ -2,27 +2,26 @@
 using System;
 using System.Text.Json;
 
-namespace DNS.Protocol.ResourceRecords
+namespace DNS.Protocol.ResourceRecords;
+
+public class CanonicalNameResourceRecord : BaseResourceRecord
 {
-    public class CanonicalNameResourceRecord : BaseResourceRecord
+    public CanonicalNameResourceRecord(IResourceRecord record, byte[] message, int dataOffset)
+        : base(record)
     {
-        public CanonicalNameResourceRecord(IResourceRecord record, byte[] message, int dataOffset)
-            : base(record)
-        {
-            CanonicalDomainName = Domain.FromArray(message, dataOffset);
-        }
+        CanonicalDomainName = Domain.FromArray(message, dataOffset);
+    }
 
-        public CanonicalNameResourceRecord(Domain domain, Domain cname, TimeSpan ttl = default) :
-            base(new ResourceRecord(domain, cname.ToArray(), RecordType.CNAME, RecordClass.IN, ttl))
-        {
-            CanonicalDomainName = cname;
-        }
+    public CanonicalNameResourceRecord(Domain domain, Domain cname, TimeSpan ttl = default) :
+        base(new ResourceRecord(domain, cname.ToArray(), RecordType.CNAME, RecordClass.IN, ttl))
+    {
+        CanonicalDomainName = cname;
+    }
 
-        public Domain CanonicalDomainName { get; }
+    public Domain CanonicalDomainName { get; }
 
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this, StringifierContext.Default.CanonicalNameResourceRecord);
-        }
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this, StringifierContext.Default.CanonicalNameResourceRecord);
     }
 }

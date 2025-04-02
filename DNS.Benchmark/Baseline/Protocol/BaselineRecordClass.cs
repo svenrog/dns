@@ -1,8 +1,7 @@
-﻿namespace DNS.Benchmark.Baseline.Protocol
+﻿namespace DNS.Benchmark.Baseline.Protocol;
+
+public enum BaselineRecordClass
 {
-    public enum BaselineRecordClass
-    {
-        IN = 1,
-        ANY = 255,
-    }
+    IN = 1,
+    ANY = 255,
 }
