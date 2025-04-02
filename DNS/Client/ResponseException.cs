@@ -1,5 +1,4 @@
 ﻿using DNS.Protocol;
-using System;
 
 namespace DNS.Client;
 

@@ -1,5 +1,4 @@
 ﻿using DNS.Protocol.Serialization;
-using System;
 using System.Net;
 using System.Text.Json;
 

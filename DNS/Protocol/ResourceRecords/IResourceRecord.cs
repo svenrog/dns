@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DNS.Protocol.ResourceRecords;
+﻿namespace DNS.Protocol.ResourceRecords;
 
 public interface IResourceRecord : IMessageEntry
 {

@@ -1,9 +1,6 @@
 ﻿using DNS.Protocol.ResourceRecords;
 using DNS.Protocol.Serialization;
 using DNS.Protocol.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace DNS.Protocol.ResourceRecords;
+﻿namespace DNS.Protocol.ResourceRecords;
 
 public static class ResourceRecordFactory
 {

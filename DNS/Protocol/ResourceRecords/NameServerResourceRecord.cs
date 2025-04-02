@@ -1,5 +1,4 @@
 ﻿using DNS.Protocol.Serialization;
-using System;
 using System.Text.Json;
 
 namespace DNS.Protocol.ResourceRecords;

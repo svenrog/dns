@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace DNS.Protocol; 
+﻿namespace DNS.Protocol; 
 public interface IMessage {
     IList<Question> Questions { get; }
 

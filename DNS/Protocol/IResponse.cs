@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using DNS.Protocol.ResourceRecords;
+﻿using DNS.Protocol.ResourceRecords;
 
 namespace DNS.Protocol; 
 public interface IResponse : IMessage {

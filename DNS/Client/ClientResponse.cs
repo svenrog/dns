@@ -1,7 +1,5 @@
 ﻿using DNS.Protocol;
 using DNS.Protocol.ResourceRecords;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace DNS.Client;
