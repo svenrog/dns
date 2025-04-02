@@ -25,7 +25,7 @@ public class QuestionBenchmarks
         _b = BaselineQuestion.FromArray(_all, 0, out int _);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void QuestionParseArrayBaseline()
     {
         BaselineQuestion.FromArray(_all, 0, out int _);
@@ -40,7 +40,7 @@ public class QuestionBenchmarks
     }
 
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void QuestionToArrayBaseline()
     {
         _b.ToArray();

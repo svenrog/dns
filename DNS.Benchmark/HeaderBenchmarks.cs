@@ -25,7 +25,7 @@ public class HeaderBenchmarks
         _b = BaselineHeader.FromArray(_all);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void HeaderParseBaseline()
     {
         BaselineHeader.FromArray(_all);

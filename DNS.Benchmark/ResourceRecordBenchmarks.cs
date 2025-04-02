@@ -25,7 +25,7 @@ public class ResourceRecordBenchmarks
         _b = BaselineResourceRecord.FromArray(_all, 0, out int _);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void ResourceRecordParseArrayBaseline()
     {
         BaselineResourceRecord.FromArray(_all, 0, out int _);
@@ -39,7 +39,7 @@ public class ResourceRecordBenchmarks
         ResourceRecord.FromArray(_empty, 0, out int _);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void ResourceRecordToArrayBaseline()
     {
         _b.ToArray();

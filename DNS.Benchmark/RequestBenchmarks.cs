@@ -25,7 +25,7 @@ public class RequestBenchmarks
         _b = BaselineRequest.FromArray(_multiple);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void RequestParseArrayBaseline()
     {
         BaselineRequest.FromArray(_multiple);
@@ -39,7 +39,7 @@ public class RequestBenchmarks
         Request.FromArray(_empty);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void RequestToArrayBaseline()
     {
         _b.ToArray();

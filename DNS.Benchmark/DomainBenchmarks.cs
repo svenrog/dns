@@ -25,7 +25,7 @@ public class DomainBenchmarks
         _b = BaselineDomain.FromArray(_pointer, 16, out int _);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void DomainParseArrayBaseline()
     {
         BaselineDomain.FromArray(_pointer, 16, out int _);
@@ -39,7 +39,7 @@ public class DomainBenchmarks
         Domain.FromArray(_empty, 1, out int _);
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void DomainParseStringBaseline()
     {
         new BaselineDomain("www.google.com");
@@ -51,7 +51,7 @@ public class DomainBenchmarks
         new Domain("www.google.com");
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public void DomainToArrayBaseline()
     {
         _b.ToArray();
