@@ -8,8 +8,6 @@ namespace DNS.Client;
 
 public class ClientRequest : IRequest
 {
-    private const int _defaultPort = 53;
-
     private readonly IRequestResolver _resolver;
     private readonly Request _request;
 
@@ -17,11 +15,11 @@ public class ClientRequest : IRequest
         this(new UdpRequestResolver(dns), request)
     { }
 
-    public ClientRequest(IPAddress ip, int port = _defaultPort, IRequest? request = null) :
+    public ClientRequest(IPAddress ip, int port = Constants.DefaultPort, IRequest? request = null) :
         this(new IPEndPoint(ip, port), request)
     { }
 
-    public ClientRequest(string ip, int port = _defaultPort, IRequest? request = null) :
+    public ClientRequest(string ip, int port = Constants.DefaultPort, IRequest? request = null) :
         this(IPAddress.Parse(ip), port, request)
     { }
 

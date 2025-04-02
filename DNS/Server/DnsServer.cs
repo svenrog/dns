@@ -11,8 +11,6 @@ namespace DNS.Server;
 public class DnsServer : IDisposable
 {
     private const int _sioUdpConnReset = unchecked((int)0x9800000C);
-    private const int _defaultPort = 53;
-    private const int _udpTimeout = 2000;
 
     public event EventHandler<RequestedEventArgs>? Requested;
     public event EventHandler<RespondedEventArgs>? Responded;
@@ -29,11 +27,11 @@ public class DnsServer : IDisposable
         this(new FallbackRequestResolver(resolver, new UdpRequestResolver(endServer)))
     { }
 
-    public DnsServer(IRequestResolver resolver, IPAddress endServer, int port = _defaultPort) :
+    public DnsServer(IRequestResolver resolver, IPAddress endServer, int port = Constants.DefaultPort) :
         this(resolver, new IPEndPoint(endServer, port))
     { }
 
-    public DnsServer(IRequestResolver resolver, string endServer, int port = _defaultPort) :
+    public DnsServer(IRequestResolver resolver, string endServer, int port = Constants.DefaultPort) :
         this(resolver, IPAddress.Parse(endServer), port)
     { }
 
@@ -41,11 +39,11 @@ public class DnsServer : IDisposable
         this(new UdpRequestResolver(endServer))
     { }
 
-    public DnsServer(IPAddress endServer, int port = _defaultPort) :
+    public DnsServer(IPAddress endServer, int port = Constants.DefaultPort) :
         this(new IPEndPoint(endServer, port))
     { }
 
-    public DnsServer(string endServer, int port = _defaultPort) :
+    public DnsServer(string endServer, int port = Constants.DefaultPort) :
         this(IPAddress.Parse(endServer), port)
     { }
 
@@ -54,7 +52,7 @@ public class DnsServer : IDisposable
         _resolver = resolver;
     }
 
-    public Task Listen(int port = _defaultPort, IPAddress? ip = null)
+    public Task Listen(int port = Constants.DefaultPort, IPAddress? ip = null)
     {
         return Listen(new IPEndPoint(ip ?? IPAddress.Any, port));
     }
@@ -157,7 +155,7 @@ public class DnsServer : IDisposable
             OnEvent(Responded, new RespondedEventArgs(request, response, data, remote));
             await _udp!
                 .SendAsync(response?.ToArray() ?? [], response?.Size ?? 0, remote)
-                .WithCancellationTimeout(TimeSpan.FromMilliseconds(_udpTimeout)).ConfigureAwait(false);
+                .WithCancellationTimeout(TimeSpan.FromMilliseconds(Constants.UdpTimeout)).ConfigureAwait(false);
         }
         catch (SocketException e) { OnError(e); }
         catch (ArgumentException e) { OnError(e); }
@@ -178,7 +176,7 @@ public class DnsServer : IDisposable
             {
                 await _udp!
                     .SendAsync(response?.ToArray() ?? [], response?.Size ?? 0, remote)
-                    .WithCancellationTimeout(TimeSpan.FromMilliseconds(_udpTimeout)).ConfigureAwait(false);
+                    .WithCancellationTimeout(TimeSpan.FromMilliseconds(Constants.UdpTimeout)).ConfigureAwait(false);
             }
             catch (SocketException) { /* Don't act */ }
             catch (OperationCanceledException) { /* Don't act */ }

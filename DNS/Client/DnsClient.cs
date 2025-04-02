@@ -7,19 +7,17 @@ namespace DNS.Client;
 
 public class DnsClient
 {
-    private const int _defaultPort = 53;
-
     private readonly IRequestResolver _resolver;
 
     public DnsClient(IPEndPoint dns) :
         this(new UdpRequestResolver(dns, new TcpRequestResolver(dns)))
     { }
 
-    public DnsClient(IPAddress ip, int port = _defaultPort) :
+    public DnsClient(IPAddress ip, int port = Constants.DefaultPort) :
         this(new IPEndPoint(ip, port))
     { }
 
-    public DnsClient(string ip, int port = _defaultPort) :
+    public DnsClient(string ip, int port = Constants.DefaultPort) :
         this(IPAddress.Parse(ip), port)
     { }
 
