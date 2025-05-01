@@ -75,7 +75,7 @@ public partial class BaselineTextResourceRecord : BaselineBaseResourceRecord
 
     public IList<BaselineCharacterString> TextData { get; }
 
-    public KeyValuePair<string, string> Attribute
+    public KeyValuePair<string?, string> Attribute
     {
         get
         {
@@ -84,14 +84,15 @@ public partial class BaselineTextResourceRecord : BaselineBaseResourceRecord
 
             if (match.Success)
             {
-                string attributeName = (match.Groups[1].Length > 0) ?
+                string? attributeName = (match.Groups[1].Length > 0) ?
                     Unescape(Trim(match.Groups[1].ToString())) : null;
+
                 string attributeValue = Unescape(match.Groups[2].ToString());
-                return new KeyValuePair<string, string>(attributeName, attributeValue);
+                return new KeyValuePair<string?, string>(attributeName, attributeValue);
             }
             else
             {
-                return new KeyValuePair<string, string>(null, Unescape(text));
+                return new KeyValuePair<string?, string>(null, Unescape(text));
             }
         }
     }

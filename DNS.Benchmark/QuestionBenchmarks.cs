@@ -12,8 +12,8 @@ public class QuestionBenchmarks
     private byte[] _all = [];
     private byte[] _empty = [];
 
-    private Question _a;
-    private BaselineQuestion _b;
+    private Question? _a;
+    private BaselineQuestion? _b;
 
     [GlobalSetup]
     public void Setup()
@@ -43,12 +43,12 @@ public class QuestionBenchmarks
     [Benchmark]
     public void QuestionToArrayBaseline()
     {
-        _b.ToArray();
+        _b!.ToArray();
     }
 
     [Benchmark]
     public void QuestionToArray()
     {
-        _a.ToArray();
+        _a!.ToArray();
     }
 }

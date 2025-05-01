@@ -130,9 +130,7 @@ public class BaselineDomain : IComparable<BaselineDomain>
         return a.Length - b.Length;
     }
 
-#pragma warning disable S2368 // Public methods should not have multidimensional array parameters
     public BaselineDomain(byte[][] labels)
-#pragma warning restore S2368 // Public methods should not have multidimensional array parameters
     {
         _labels = labels;
     }
@@ -178,23 +176,25 @@ public class BaselineDomain : IComparable<BaselineDomain>
         return ToString(Encoding.ASCII);
     }
 
-    public int CompareTo(BaselineDomain other)
+    public int CompareTo(BaselineDomain? other)
     {
-        int length = Math.Min(_labels.Length, other._labels.Length);
+        int otherLength = other?._labels.Length ?? 0;
+        int length = Math.Min(_labels.Length, otherLength);
 
         for (int i = 0; i < length; i++)
         {
-            int v = CompareTo(_labels[i], other._labels[i]);
+            int v = CompareTo(_labels[i], other!._labels[i]);
             if (v != 0) return v;
         }
 
-        return _labels.Length - other._labels.Length;
+        return _labels.Length - otherLength;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj == null)
             return false;
+
         if (obj is not BaselineDomain)
             return false;
 

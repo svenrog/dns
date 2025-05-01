@@ -7,7 +7,7 @@ public static class BaselineTaskExtensions
         TaskCompletionSource<bool> tcs = new();
         CancellationTokenRegistration registration = token.Register(src =>
         {
-            ((TaskCompletionSource<bool>)src).TrySetResult(true);
+            (src as TaskCompletionSource<bool>)?.TrySetResult(true);
         }, tcs);
 
         using (registration)

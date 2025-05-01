@@ -12,8 +12,8 @@ public class DomainBenchmarks
     private byte[] _pointer = [];
     private byte[] _empty = [];
 
-    private Domain _a;
-    private BaselineDomain _b;
+    private Domain? _a;
+    private BaselineDomain? _b;
 
     [GlobalSetup]
     public void Setup()
@@ -40,26 +40,26 @@ public class DomainBenchmarks
     }
 
     [Benchmark]
-    public void DomainParseStringBaseline()
+    public static BaselineDomain DomainParseStringBaseline()
     {
-        new BaselineDomain("www.google.com");
+        return new BaselineDomain("www.google.com");
     }
 
     [Benchmark]
-    public void DomainParseString()
+    public static Domain DomainParseString()
     {
-        new Domain("www.google.com");
+        return new Domain("www.google.com");
     }
 
     [Benchmark]
     public void DomainToArrayBaseline()
     {
-        _b.ToArray();
+        _b!.ToArray();
     }
 
     [Benchmark]
     public void DomainToArray()
     {
-        _a.ToArray();
+        _a!.ToArray();
     }
 }

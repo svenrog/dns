@@ -12,8 +12,8 @@ public class ResourceRecordBenchmarks
     private byte[] _all = [];
     private byte[] _empty = [];
 
-    private ResourceRecord _a;
-    private BaselineResourceRecord _b;
+    private ResourceRecord? _a;
+    private BaselineResourceRecord? _b;
 
     [GlobalSetup]
     public void Setup()
@@ -42,12 +42,12 @@ public class ResourceRecordBenchmarks
     [Benchmark]
     public void ResourceRecordToArrayBaseline()
     {
-        _b.ToArray();
+        _b!.ToArray();
     }
 
     [Benchmark]
     public void ResourceRecordToArray()
     {
-        _a.ToArray();
+        _a!.ToArray();
     }
 }

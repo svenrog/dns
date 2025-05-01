@@ -18,7 +18,6 @@ public class ServerBenchmarks
 {
     private const int _port = 64646;
     private const int _baselinePort = 64647;
-    private const int _requests = 100;
 
     private const string _domain = "google.com";
     private static readonly IPAddress _localIp = IPAddress.Parse("192.168.0.1");
@@ -61,21 +60,15 @@ public class ServerBenchmarks
     [Benchmark(Baseline = true)]
     public async Task BaselineServerReceive()
     {
-        await Parallel.ForAsync(0, _requests, async (i, ct) =>
-        {
-            await _udpClient!.SendAsync(_request, _baselineEndpoint, ct);
-            await _udpClient.ReceiveAsync();
-        });
+        await _udpClient!.SendAsync(_request, _baselineEndpoint);
+        await _udpClient.ReceiveAsync();
     }
 
     [Benchmark]
     public async Task ServerReceive()
     {
-        await Parallel.ForAsync(0, _requests, async (i, ct) =>
-        {
-            await _udpClient!.SendAsync(_request, _endpoint, ct);
-            await _udpClient.ReceiveAsync();
-        });
+        await _udpClient!.SendAsync(_request, _endpoint);
+        await _udpClient.ReceiveAsync();
     }
 
     [GlobalCleanup]
@@ -88,27 +81,27 @@ public class ServerBenchmarks
 
     private class IPAddressRequestResolver : IRequestResolver
     {
-        public Task<IResponse> Resolve(IRequest request, CancellationToken cancellationToken = default)
+        public Task<IResponse?> Resolve(IRequest request, CancellationToken cancellationToken = default)
         {
             var response = Response.FromRequest(request);
             var record = new IPAddressResourceRecord(new Domain(_domain), _localIp);
 
             response.AnswerRecords.Add(record);
 
-            return Task.FromResult<IResponse>(response);
+            return Task.FromResult<IResponse?>(response);
         }
     }
 
     private class BaselineIPAddressRequestResolver : IBaselineRequestResolver
     {
-        public Task<IBaselineResponse> Resolve(IBaselineRequest request, CancellationToken cancellationToken = default)
+        public Task<IBaselineResponse?> Resolve(IBaselineRequest request, CancellationToken cancellationToken = default)
         {
             var response = BaselineResponse.FromRequest(request);
             var record = new BaselineIPAddressResourceRecord(new BaselineDomain(_domain), _localIp);
 
             response.AnswerRecords.Add(record);
 
-            return Task.FromResult<IBaselineResponse>(response);
+            return Task.FromResult<IBaselineResponse?>(response);
         }
     }
 }

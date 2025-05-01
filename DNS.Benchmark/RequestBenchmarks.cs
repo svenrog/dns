@@ -12,8 +12,8 @@ public class RequestBenchmarks
     private byte[] _multiple = [];
     private byte[] _empty = [];
 
-    private Request _a;
-    private BaselineRequest _b;
+    private Request? _a;
+    private BaselineRequest? _b;
 
     [GlobalSetup]
     public void Setup()
@@ -42,12 +42,12 @@ public class RequestBenchmarks
     [Benchmark]
     public void RequestToArrayBaseline()
     {
-        _b.ToArray();
+        _b!.ToArray();
     }
 
     [Benchmark]
     public void RequestToArray()
     {
-        _a.ToArray();
+        _a!.ToArray();
     }
 }
