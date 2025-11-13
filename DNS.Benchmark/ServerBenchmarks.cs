@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
 using DNS.Benchmark.Baseline.Client.RequestResolver;
 using DNS.Benchmark.Baseline.Protocol;
 using DNS.Benchmark.Baseline.Protocol.ResourceRecords;
@@ -13,6 +14,8 @@ using System.Net.Sockets;
 namespace DNS.Benchmark;
 
 [MemoryDiagnoser]
+[SimpleJob(RuntimeMoniker.Net90, baseline: true)]
+[SimpleJob(RuntimeMoniker.Net10_0)]
 
 public class ServerBenchmarks
 {
