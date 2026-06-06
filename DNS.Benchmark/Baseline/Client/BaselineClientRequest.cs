@@ -4,6 +4,7 @@ using DNS.Client;
 using DNS.Protocol.ResourceRecords;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Net.Sockets;
 
 namespace DNS.Benchmark.Baseline.Client;
 

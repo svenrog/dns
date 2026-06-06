@@ -3,6 +3,12 @@
 	<PropertyGroup>
 		<!-- Run IDE code-style analyzers (IDExxxx) during build, not just in the IDE -->
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+		<!-- Required for IDE0005 (remove unnecessary usings) to run on build.
+		     CS1591 (missing XML doc comment) is suppressed so enabling docs does
+		     not force XML comments across the whole public API. -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
 	</PropertyGroup>
 
 </Project>

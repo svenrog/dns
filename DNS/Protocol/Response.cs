@@ -1,6 +1,5 @@
 ﻿using DNS.Protocol.ResourceRecords;
 using DNS.Protocol.Serialization;
-using DNS.Protocol.Utils;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -155,12 +154,25 @@ public class Response : IResponse
     {
         get
         {
-            return Header.SIZE +
-                _questions.Sum(q => q.Size) +
-                _answers.Sum(a => a.Size) +
-                _authority.Sum(a => a.Size) +
-                _additional.Sum(a => a.Size);
+            int size = Header.SIZE;
+
+            for (int i = 0; i < _questions.Count; i++) size += _questions[i].Size;
+
+            size += SumSizes(_answers);
+            size += SumSizes(_authority);
+            size += SumSizes(_additional);
+
+            return size;
         }
+    }
+
+    private static int SumSizes(IList<IResourceRecord> records)
+    {
+        int size = 0;
+
+        for (int i = 0; i < records.Count; i++) size += records[i].Size;
+
+        return size;
     }
 
     public byte[] ToArray()
@@ -177,8 +189,9 @@ public class Response : IResponse
         _header.WriteTo(destination);
         int offset = Header.SIZE;
 
-        foreach (Question question in _questions)
+        for (int i = 0; i < _questions.Count; i++)
         {
+            Question question = _questions[i];
             question.WriteTo(destination[offset..]);
             offset += question.Size;
         }
@@ -190,8 +203,9 @@ public class Response : IResponse
 
     private static int WriteRecords(IList<IResourceRecord> records, Span<byte> destination, int offset)
     {
-        foreach (IResourceRecord record in records)
+        for (int i = 0; i < records.Count; i++)
         {
+            IResourceRecord record = records[i];
             record.ToArray().CopyTo(destination[offset..]);
             offset += record.Size;
         }

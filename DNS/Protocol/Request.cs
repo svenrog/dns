@@ -1,6 +1,5 @@
 ﻿using DNS.Protocol.ResourceRecords;
 using DNS.Protocol.Serialization;
-using DNS.Protocol.Utils;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -80,9 +79,12 @@ public class Request : IRequest
     {
         get
         {
-            return Header.SIZE +
-                _questions.Sum(q => q.Size) +
-                _additional.Sum(a => a.Size);
+            int size = Header.SIZE;
+
+            for (int i = 0; i < _questions.Count; i++) size += _questions[i].Size;
+            for (int i = 0; i < _additional.Count; i++) size += _additional[i].Size;
+
+            return size;
         }
     }
 
@@ -112,15 +114,16 @@ public class Request : IRequest
         _header.WriteTo(span);
         offset += Header.SIZE;
 
-        foreach (Question q in _questions)
+        for (int i = 0; i < _questions.Count; i++)
         {
+            Question q = _questions[i];
             q.WriteTo(span[offset..]);
             offset += q.Size;
         }
 
-        foreach (IResourceRecord a in _additional)
+        for (int i = 0; i < _additional.Count; i++)
         {
-            byte[] bytes = a.ToArray();
+            byte[] bytes = _additional[i].ToArray();
             bytes.CopyTo(span[offset..]);
             offset += bytes.Length;
         }

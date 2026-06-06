@@ -3,6 +3,7 @@ using DNS.Protocol;
 using DNS.Protocol.ResourceRecords;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Net.Sockets;
 
 namespace DNS.Client;
 

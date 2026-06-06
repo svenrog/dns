@@ -1,7 +1,6 @@
 ﻿using DNS.Client;
 using DNS.Client.RequestResolver;
 using DNS.Protocol;
-using DNS.Protocol.Utils;
 using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
@@ -195,9 +194,9 @@ public class DnsServer : IDisposable
             {
                 concrete.WriteTo(buffer);
             }
-            else if (response != null)
+            else
             {
-                response.ToArray().CopyTo(buffer.AsSpan());
+                response?.ToArray().CopyTo(buffer.AsSpan());
             }
 
             using CancellationTokenSource timeout = new(TimeSpan.FromMilliseconds(Constants.UdpTimeout));
