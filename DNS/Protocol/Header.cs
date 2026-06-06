@@ -39,8 +39,7 @@ public struct Header
 
         Span<byte> buffer = stackalloc byte[SIZE];
 
-        header.AsSpan()
-            .Slice(0, SIZE)
+        header.AsSpan()[..SIZE]
             .CopyTo(buffer);
 
         ConvertEndianness(ref buffer);
@@ -73,7 +72,7 @@ public struct Header
         if (!BitConverter.IsLittleEndian) return;
 
         // Manual endian conversion
-        bytes.Slice(0, sizeof(ushort)).Reverse();
+        bytes[..sizeof(ushort)].Reverse();
         bytes.Slice(2, sizeof(byte)).Reverse();
         bytes.Slice(3, sizeof(byte)).Reverse();
         bytes.Slice(4, sizeof(ushort)).Reverse();

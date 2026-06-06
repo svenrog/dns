@@ -5,3 +5,72 @@ csharp_prefer_braces = false
 
 # IDE0290: Use primary constructor
 csharp_style_prefer_primary_constructors = false
+
+# --- Modern style rules (enforced as warnings) ---
+
+# IDE0056: Use index operator
+csharp_style_prefer_index_operator = true
+dotnet_diagnostic.IDE0056.severity = warning
+
+# IDE0057: Use range operator
+csharp_style_prefer_range_operator = true
+dotnet_diagnostic.IDE0057.severity = warning
+
+# IDE0063: Use simple 'using' statement
+csharp_prefer_simple_using_statement = true
+dotnet_diagnostic.IDE0063.severity = warning
+
+# IDE0066: Use switch expression
+csharp_style_prefer_switch_expression = true
+dotnet_diagnostic.IDE0066.severity = warning
+
+# IDE0078 / IDE0083: Use pattern matching
+csharp_style_prefer_pattern_matching = true
+csharp_style_prefer_not_pattern = true
+dotnet_diagnostic.IDE0078.severity = warning
+dotnet_diagnostic.IDE0083.severity = warning
+
+# IDE0090: Use target-typed 'new(...)'
+csharp_style_implicit_object_creation_when_type_is_apparent = true
+dotnet_diagnostic.IDE0090.severity = warning
+
+# IDE0074 / IDE0270: Use coalesce / compound assignment
+dotnet_style_coalesce_expression = true
+dotnet_style_prefer_compound_assignment = true
+dotnet_diagnostic.IDE0074.severity = warning
+dotnet_diagnostic.IDE0270.severity = warning
+
+# IDE0300-0305: Use collection expressions
+dotnet_style_prefer_collection_expression = when_types_loosely_match
+dotnet_diagnostic.IDE0300.severity = warning
+dotnet_diagnostic.IDE0301.severity = warning
+dotnet_diagnostic.IDE0302.severity = warning
+dotnet_diagnostic.IDE0303.severity = warning
+dotnet_diagnostic.IDE0304.severity = warning
+dotnet_diagnostic.IDE0305.severity = warning
+
+[DNS.Benchmark/**.cs]
+
+# CA1822: Mark members as static
+# BenchmarkDotNet requires [Benchmark] methods to be instance methods
+dotnet_diagnostic.CA1822.severity = none
+
+[DNS.Benchmark/Baseline/**.cs]
+
+# Frozen snapshot of the previous implementation, kept as the benchmark
+# comparison point — exempt from the modern style rules so it stays as-was.
+dotnet_diagnostic.IDE0056.severity = none
+dotnet_diagnostic.IDE0057.severity = none
+dotnet_diagnostic.IDE0063.severity = none
+dotnet_diagnostic.IDE0066.severity = none
+dotnet_diagnostic.IDE0074.severity = none
+dotnet_diagnostic.IDE0078.severity = none
+dotnet_diagnostic.IDE0083.severity = none
+dotnet_diagnostic.IDE0090.severity = none
+dotnet_diagnostic.IDE0270.severity = none
+dotnet_diagnostic.IDE0300.severity = none
+dotnet_diagnostic.IDE0301.severity = none
+dotnet_diagnostic.IDE0302.severity = none
+dotnet_diagnostic.IDE0303.severity = none
+dotnet_diagnostic.IDE0304.severity = none
+dotnet_diagnostic.IDE0305.severity = none

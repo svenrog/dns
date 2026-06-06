@@ -114,14 +114,14 @@ public class Request : IRequest
 
         foreach (Question q in _questions)
         {
-            q.WriteTo(span.Slice(offset));
+            q.WriteTo(span[offset..]);
             offset += q.Size;
         }
 
         foreach (IResourceRecord a in _additional)
         {
             byte[] bytes = a.ToArray();
-            bytes.CopyTo(span.Slice(offset));
+            bytes.CopyTo(span[offset..]);
             offset += bytes.Length;
         }
 

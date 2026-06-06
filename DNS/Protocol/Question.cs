@@ -99,7 +99,7 @@ public class Question : IMessageEntry
             Class = Class
         };
 
-        tail.WriteTo(destination.Slice(_domain.Size));
+        tail.WriteTo(destination[_domain.Size..]);
     }
 
     public override string ToString()
@@ -141,7 +141,7 @@ public class Question : IMessageEntry
             if (!BitConverter.IsLittleEndian) return;
 
             // Manual endian conversion
-            bytes.Slice(0, sizeof(ushort)).Reverse();
+            bytes[..sizeof(ushort)].Reverse();
             bytes.Slice(2, sizeof(ushort)).Reverse();
         }
 

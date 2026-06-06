@@ -124,9 +124,9 @@ public class ResourceRecord(
             DataLength = _data.Length
         };
 
-        tail.WriteTo(span.Slice(tailOffset));
+        tail.WriteTo(span[tailOffset..]);
 
-        _data.CopyTo(span.Slice(tailOffset + Tail.SIZE));
+        _data.CopyTo(span[(tailOffset + Tail.SIZE)..]);
 
         return result;
     }
@@ -174,7 +174,7 @@ public class ResourceRecord(
             if (!BitConverter.IsLittleEndian) return;
 
             // Manual endian conversion
-            bytes.Slice(0, sizeof(ushort)).Reverse();
+            bytes[..sizeof(ushort)].Reverse();
             bytes.Slice(2, sizeof(ushort)).Reverse();
             bytes.Slice(4, sizeof(uint)).Reverse();
             bytes.Slice(8, sizeof(ushort)).Reverse();
