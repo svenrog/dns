@@ -12,8 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DNS\DNS.csproj" />
-    <ProjectReference Include="..\Tests\DNS.Tests.csproj" />
+    <ProjectReference Include="..\..\src\DNS\DNS.csproj" />
+    <ProjectReference Include="..\DNS.Benchmark.Baseline\DNS.Benchmark.Baseline.csproj" />
+    <ProjectReference Include="..\DNS.Tests\DNS.Tests.csproj" />
   </ItemGroup>
 
 </Project>
