@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\DNS\DNS.csproj" />
+		<ProjectReference Include="..\..\src\DNS\DNS.csproj" />
 	</ItemGroup>
 
 </Project>

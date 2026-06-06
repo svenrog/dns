@@ -56,16 +56,17 @@ dotnet_diagnostic.IDE0303.severity = warning
 dotnet_diagnostic.IDE0304.severity = warning
 dotnet_diagnostic.IDE0305.severity = warning
 
-[DNS.Benchmark/**.cs]
+[tests/DNS.Benchmark/**.cs]
 
 # CA1822: Mark members as static
 # BenchmarkDotNet requires [Benchmark] methods to be instance methods
 dotnet_diagnostic.CA1822.severity = none
 
-[DNS.Benchmark/Baseline/**.cs]
+[tests/DNS.Benchmark.Baseline/**.cs]
 
 # Frozen snapshot of the previous implementation, kept as the benchmark
 # comparison point — exempt from the modern style rules so it stays as-was.
+dotnet_diagnostic.CA1822.severity = none
 dotnet_diagnostic.IDE0005.severity = none
 dotnet_diagnostic.IDE0031.severity = none
 dotnet_diagnostic.IDE0056.severity = none
