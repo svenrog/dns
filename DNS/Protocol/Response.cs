@@ -1,6 +1,5 @@
 ﻿using DNS.Protocol.ResourceRecords;
 using DNS.Protocol.Serialization;
-using DNS.Protocol.Utils;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

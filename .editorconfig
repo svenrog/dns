@@ -8,6 +8,13 @@ csharp_style_prefer_primary_constructors = false
 
 # --- Modern style rules (enforced as warnings) ---
 
+# IDE0005: Remove unnecessary using directives
+dotnet_diagnostic.IDE0005.severity = warning
+
+# IDE0031: Use null propagation
+dotnet_style_null_propagation = true
+dotnet_diagnostic.IDE0031.severity = warning
+
 # IDE0056: Use index operator
 csharp_style_prefer_index_operator = true
 dotnet_diagnostic.IDE0056.severity = warning
@@ -59,6 +66,8 @@ dotnet_diagnostic.CA1822.severity = none
 
 # Frozen snapshot of the previous implementation, kept as the benchmark
 # comparison point — exempt from the modern style rules so it stays as-was.
+dotnet_diagnostic.IDE0005.severity = none
+dotnet_diagnostic.IDE0031.severity = none
 dotnet_diagnostic.IDE0056.severity = none
 dotnet_diagnostic.IDE0057.severity = none
 dotnet_diagnostic.IDE0063.severity = none
