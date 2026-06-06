@@ -165,17 +165,38 @@ public class Response : IResponse
 
     public byte[] ToArray()
     {
+        byte[] result = new byte[Size];
+        WriteTo(result);
+        return result;
+    }
+
+    public void WriteTo(Span<byte> destination)
+    {
         UpdateHeader();
-        ByteArrayBuilder builder = new(Size);
 
-        builder
-            .Append(_header.ToArray())
-            .Append(_questions.Select(q => q.ToArray()))
-            .Append(_answers.Select(a => a.ToArray()))
-            .Append(_authority.Select(a => a.ToArray()))
-            .Append(_additional.Select(a => a.ToArray()));
+        _header.WriteTo(destination);
+        int offset = Header.SIZE;
 
-        return builder.Build();
+        foreach (Question question in _questions)
+        {
+            question.WriteTo(destination[offset..]);
+            offset += question.Size;
+        }
+
+        offset = WriteRecords(_answers, destination, offset);
+        offset = WriteRecords(_authority, destination, offset);
+        WriteRecords(_additional, destination, offset);
+    }
+
+    private static int WriteRecords(IList<IResourceRecord> records, Span<byte> destination, int offset)
+    {
+        foreach (IResourceRecord record in records)
+        {
+            record.ToArray().CopyTo(destination[offset..]);
+            offset += record.Size;
+        }
+
+        return offset;
     }
 
     public override string ToString()
