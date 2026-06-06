@@ -187,7 +187,9 @@ public class Domain : IComparable<Domain?>
 
         for (int i = 0; i < length; i++)
         {
-            int v = string.Compare(_labels[i], other._labels[i], true);
+            // DNS names are ASCII case-insensitive (RFC 4343); ordinal comparison
+            // is correct and avoids culture-specific casing rules.
+            int v = string.Compare(_labels[i], other._labels[i], StringComparison.OrdinalIgnoreCase);
             if (v != 0) return v;
         }
 
@@ -214,11 +216,7 @@ public class Domain : IComparable<Domain?>
 
         foreach (string label in _labels)
         {
-            foreach (char c in label)
-            {
-                char n = char.IsLower(c) ? c : char.ToLower(c);
-                hash = hash * 31 + n.GetHashCode();
-            }
+            hash = hash * 31 + label.GetHashCode(StringComparison.OrdinalIgnoreCase);
         }
 
         return hash;
