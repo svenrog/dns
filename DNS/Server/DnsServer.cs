@@ -2,6 +2,7 @@
 using DNS.Client.RequestResolver;
 using DNS.Protocol;
 using DNS.Protocol.Utils;
+using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -153,9 +154,7 @@ public class DnsServer : IDisposable
             IResponse? response = await _resolver.Resolve(request).ConfigureAwait(false);
 
             OnEvent(Responded, new RespondedEventArgs(request, response, data, remote));
-            await _udp!
-                .SendAsync(response?.ToArray() ?? [], response?.Size ?? 0, remote)
-                .WithCancellationTimeout(TimeSpan.FromMilliseconds(Constants.UdpTimeout)).ConfigureAwait(false);
+            await SendResponse(response, remote).ConfigureAwait(false);
         }
         catch (SocketException e) { OnError(e); }
         catch (ArgumentException e) { OnError(e); }
@@ -174,13 +173,39 @@ public class DnsServer : IDisposable
 
             try
             {
-                await _udp!
-                    .SendAsync(response?.ToArray() ?? [], response?.Size ?? 0, remote)
-                    .WithCancellationTimeout(TimeSpan.FromMilliseconds(Constants.UdpTimeout)).ConfigureAwait(false);
+                await SendResponse(response, remote).ConfigureAwait(false);
             }
             catch (SocketException) { /* Don't act */ }
             catch (OperationCanceledException) { /* Don't act */ }
             finally { OnError(e); }
+        }
+    }
+
+    private async Task SendResponse(IResponse? response, IPEndPoint? remote)
+    {
+        int size = response?.Size ?? 0;
+
+        // Serialize into a pooled buffer to avoid an allocation per response.
+        // Response bytes are internal to the send path (not exposed via events).
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
+
+        try
+        {
+            if (response is Response concrete)
+            {
+                concrete.WriteTo(buffer);
+            }
+            else if (response != null)
+            {
+                response.ToArray().CopyTo(buffer.AsSpan());
+            }
+
+            using CancellationTokenSource timeout = new(TimeSpan.FromMilliseconds(Constants.UdpTimeout));
+            await _udp!.SendAsync(buffer.AsMemory(0, size), remote, timeout.Token).ConfigureAwait(false);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 

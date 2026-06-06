@@ -41,4 +41,33 @@ public class MasterFileTest {
         Assert.Equal("google.com", clientResponseAnswer.Name.ToString());
         Assert.Equal("192.168.0.1", ((IPAddressResourceRecord) clientResponseAnswer).IPAddress.ToString());
     }
+
+    [Theory]
+    [InlineData("foo.google.com")]
+    [InlineData("BAR.google.com")]
+    public async Task ResolveWildcardRecord(string domain) {
+        MasterFile masterFile = new();
+        masterFile.AddIPAddressResourceRecord("*.google.com", "192.168.0.1");
+
+        IRequest clientRequest = new Request();
+        clientRequest.Questions.Add(new Question(new Domain(domain), RecordType.A));
+
+        IResponse clientResponse = await masterFile.Resolve(clientRequest);
+
+        Assert.Single(clientResponse.AnswerRecords);
+        Assert.Equal("192.168.0.1", ((IPAddressResourceRecord) clientResponse.AnswerRecords[0]).IPAddress.ToString());
+    }
+
+    [Fact]
+    public async Task WildcardDoesNotMatchAcrossLabels() {
+        MasterFile masterFile = new();
+        masterFile.AddIPAddressResourceRecord("*.google.com", "192.168.0.1");
+
+        IRequest clientRequest = new Request();
+        clientRequest.Questions.Add(new Question(new Domain("a.b.google.com"), RecordType.A));
+
+        IResponse clientResponse = await masterFile.Resolve(clientRequest);
+
+        Assert.Empty(clientResponse.AnswerRecords);
+    }
 }

@@ -12,6 +12,11 @@ public class MasterFile : IRequestResolver
 
     protected static bool Matches(Domain domain, Domain entry)
     {
+        return BuildMatcher(entry).IsMatch(domain.ToString());
+    }
+
+    private static Regex BuildMatcher(Domain entry)
+    {
         string[] labels = entry.ToString().Split('.');
         string[] patterns = new string[labels.Length];
 
@@ -21,8 +26,17 @@ public class MasterFile : IRequestResolver
             patterns[i] = label == "*" ? "(\\w+)" : Regex.Escape(label);
         }
 
-        Regex re = new("^" + string.Join("\\.", patterns) + "$", RegexOptions.IgnoreCase);
-        return re.IsMatch(domain.ToString());
+        return new Regex("^" + string.Join("\\.", patterns) + "$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    }
+
+    private static bool IsWildcard(Domain entry)
+    {
+        foreach (string label in entry.ToString().Split('.'))
+        {
+            if (label == "*") return true;
+        }
+
+        return false;
     }
 
     protected static void Merge<T>(IList<T> l1, IList<T> l2)
@@ -35,6 +49,11 @@ public class MasterFile : IRequestResolver
 
     protected IList<IResourceRecord> entries = [];
     protected TimeSpan ttl = DEFAULT_TTL;
+
+    // Lookup index, rebuilt lazily whenever the entry count changes.
+    private readonly Dictionary<Domain, List<IResourceRecord>> _exact = [];
+    private readonly List<(Regex Pattern, IResourceRecord Record)> _wildcard = [];
+    private int _indexedCount = -1;
 
     public MasterFile(TimeSpan ttl)
     {
@@ -136,11 +155,62 @@ public class MasterFile : IRequestResolver
 
     protected IList<IResourceRecord> Get(Domain domain, RecordType type)
     {
-        return [.. entries.Where(e => Matches(domain, e.Name) && (e.Type == type || type == RecordType.ANY))];
+        EnsureIndex();
+
+        List<IResourceRecord> results = [];
+
+        if (_exact.TryGetValue(domain, out List<IResourceRecord>? exact))
+        {
+            foreach (IResourceRecord entry in exact)
+            {
+                if (entry.Type == type || type == RecordType.ANY) results.Add(entry);
+            }
+        }
+
+        if (_wildcard.Count > 0)
+        {
+            string domainText = domain.ToString();
+
+            foreach ((Regex pattern, IResourceRecord entry) in _wildcard)
+            {
+                if ((entry.Type == type || type == RecordType.ANY) && pattern.IsMatch(domainText)) results.Add(entry);
+            }
+        }
+
+        return results;
     }
 
     protected IList<IResourceRecord> Get(Question question)
     {
         return Get(question.Name, question.Type);
+    }
+
+    private void EnsureIndex()
+    {
+        // entries is protected, so rebuild whenever its size no longer matches the index.
+        if (_indexedCount == entries.Count) return;
+
+        _exact.Clear();
+        _wildcard.Clear();
+
+        foreach (IResourceRecord entry in entries)
+        {
+            if (IsWildcard(entry.Name))
+            {
+                _wildcard.Add((BuildMatcher(entry.Name), entry));
+            }
+            else
+            {
+                if (!_exact.TryGetValue(entry.Name, out List<IResourceRecord>? list))
+                {
+                    list = [];
+                    _exact[entry.Name] = list;
+                }
+
+                list.Add(entry);
+            }
+        }
+
+        _indexedCount = entries.Count;
     }
 }
