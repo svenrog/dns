@@ -40,13 +40,13 @@ public class DomainBenchmarks
     }
 
     [Benchmark]
-    public static BaselineDomain DomainParseStringBaseline()
+    public BaselineDomain DomainParseStringBaseline()
     {
         return new BaselineDomain("www.google.com");
     }
 
     [Benchmark]
-    public static Domain DomainParseString()
+    public Domain DomainParseString()
     {
         return new Domain("www.google.com");
     }

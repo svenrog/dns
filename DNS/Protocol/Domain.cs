@@ -152,20 +152,25 @@ public class Domain : IComparable<Domain?>
     public byte[] ToArray()
     {
         byte[] result = new byte[Size];
+        WriteTo(result);
+        return result;
+    }
+
+    public void WriteTo(Span<byte> destination)
+    {
         int offset = 0;
 
         foreach (string label in _labels)
         {
-            byte length = (byte)Encoding.ASCII.GetByteCount(label);
+            byte length = (byte)label.Length;
 
-            result[offset++] = length;
-            Encoding.ASCII.GetBytes(label, 0, label.Length, result, offset);
+            destination[offset++] = length;
+            Encoding.ASCII.GetBytes(label, destination.Slice(offset, length));
 
-            offset += label.Length;
+            offset += length;
         }
 
-        result[offset] = 0;
-        return result;
+        destination[offset] = 0;
     }
 
     public override string ToString()

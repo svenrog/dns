@@ -104,14 +104,28 @@ public class Request : IRequest
     public byte[] ToArray()
     {
         UpdateHeader();
-        ByteArrayBuilder builder = new(Size);
 
-        builder
-            .Append(_header.ToArray())
-            .Append(_questions.Select(q => q.ToArray()))
-            .Append(_additional.Select(a => a.ToArray()));
+        byte[] result = new byte[Size];
+        Span<byte> span = result;
+        int offset = 0;
 
-        return builder.Build();
+        _header.WriteTo(span);
+        offset += Header.SIZE;
+
+        foreach (Question q in _questions)
+        {
+            q.WriteTo(span[offset..]);
+            offset += q.Size;
+        }
+
+        foreach (IResourceRecord a in _additional)
+        {
+            byte[] bytes = a.ToArray();
+            bytes.CopyTo(span[offset..]);
+            offset += bytes.Length;
+        }
+
+        return result;
     }
 
     public override string ToString()
@@ -129,9 +143,9 @@ public class Request : IRequest
 
     private static ushort NextRandomId()
     {
-        byte[] buffer = new byte[sizeof(ushort)];
+        Span<byte> buffer = stackalloc byte[sizeof(ushort)];
         _random.GetBytes(buffer);
 
-        return BitConverter.ToUInt16(buffer, 0);
+        return BitConverter.ToUInt16(buffer);
     }
 }

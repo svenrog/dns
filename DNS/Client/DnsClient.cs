@@ -39,7 +39,7 @@ public class DnsClient
 
     public async Task<IList<IPAddress>> Lookup(string domain, RecordType type = RecordType.A, CancellationToken cancellationToken = default)
     {
-        if (type != RecordType.A && type != RecordType.AAAA)
+        if (type is not RecordType.A and not RecordType.AAAA)
             throw new ArgumentException("Invalid record type " + type);
 
         IResponse response = await Resolve(domain, type, cancellationToken).ConfigureAwait(false);

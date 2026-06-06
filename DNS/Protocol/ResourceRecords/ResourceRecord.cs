@@ -109,7 +109,12 @@ public class ResourceRecord(
 
     public byte[] ToArray()
     {
-        ByteArrayBuilder builder = new(Size);
+        byte[] result = new byte[Size];
+        Span<byte> span = result;
+
+        _domain.WriteTo(span);
+
+        int tailOffset = _domain.Size;
 
         Tail tail = new()
         {
@@ -119,12 +124,11 @@ public class ResourceRecord(
             DataLength = _data.Length
         };
 
-        builder
-            .Append(_domain.ToArray())
-            .Append(tail.ToArray())
-            .Append(_data);
+        tail.WriteTo(span[tailOffset..]);
 
-        return builder.Build();
+        _data.CopyTo(span[(tailOffset + Tail.SIZE)..]);
+
+        return result;
     }
 
     public override string ToString()
@@ -155,18 +159,14 @@ public class ResourceRecord(
             return MemoryMarshal.Read<Tail>(tail);
         }
 
-        public readonly byte[] ToArray()
+        public readonly void WriteTo(Span<byte> destination)
         {
-            Span<byte> span = stackalloc byte[SIZE];
+            Unsafe.As<byte, ushort>(ref destination[0]) = _type;
+            Unsafe.As<byte, ushort>(ref destination[2]) = _class;
+            Unsafe.As<byte, uint>(ref destination[4]) = _ttl;
+            Unsafe.As<byte, ushort>(ref destination[8]) = _dataLength;
 
-            Unsafe.As<byte, ushort>(ref span[0]) = _type;
-            Unsafe.As<byte, ushort>(ref span[2]) = _class;
-            Unsafe.As<byte, uint>(ref span[4]) = _ttl;
-            Unsafe.As<byte, ushort>(ref span[8]) = _dataLength;
-
-            ConvertEndianness(ref span);
-
-            return span.ToArray();
+            ConvertEndianness(ref destination);
         }
 
         private static void ConvertEndianness(ref Span<byte> bytes)
@@ -174,7 +174,7 @@ public class ResourceRecord(
             if (!BitConverter.IsLittleEndian) return;
 
             // Manual endian conversion
-            bytes.Slice(0, sizeof(ushort)).Reverse();
+            bytes[..sizeof(ushort)].Reverse();
             bytes.Slice(2, sizeof(ushort)).Reverse();
             bytes.Slice(4, sizeof(uint)).Reverse();
             bytes.Slice(8, sizeof(ushort)).Reverse();

@@ -19,6 +19,10 @@ A DNS library in C#: message parsing/serialization plus a small DNS client and p
 - `ImplicitUsings` is enabled — common namespaces (`System`, `System.Linq`, etc.) are already imported; don't add redundant `using` directives.
 - `PublishAot=true` — avoid patterns that break AOT/trimming (unbounded reflection, dynamic codegen).
 
+## Git workflow
+
+- Don't commit directly to `master`. Create a feature branch and open a PR for review. Branch names are unconstrained.
+
 ## Code style (non-default, from .editorconfig)
 
 - Do **not** add braces to single-line `if`/`for` bodies (`csharp_prefer_braces = false`).

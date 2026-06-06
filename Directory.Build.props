@@ -1,0 +1,8 @@
+<Project>
+
+	<PropertyGroup>
+		<!-- Run IDE code-style analyzers (IDExxxx) during build, not just in the IDE -->
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	</PropertyGroup>
+
+</Project>

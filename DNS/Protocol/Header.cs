@@ -39,8 +39,7 @@ public struct Header
 
         Span<byte> buffer = stackalloc byte[SIZE];
 
-        header.AsSpan()
-            .Slice(0, SIZE)
+        header.AsSpan()[..SIZE]
             .CopyTo(buffer);
 
         ConvertEndianness(ref buffer);
@@ -50,19 +49,22 @@ public struct Header
 
     public readonly byte[] ToArray()
     {
-        Span<byte> buffer = stackalloc byte[SIZE];
+        byte[] result = new byte[SIZE];
+        WriteTo(result);
+        return result;
+    }
 
-        Unsafe.As<byte, ushort>(ref buffer[0]) = _id;
-        Unsafe.As<byte, byte>(ref buffer[2]) = _flag0;
-        Unsafe.As<byte, byte>(ref buffer[3]) = _flag1;
-        Unsafe.As<byte, ushort>(ref buffer[4]) = _qdCount;
-        Unsafe.As<byte, ushort>(ref buffer[6]) = _anCount;
-        Unsafe.As<byte, ushort>(ref buffer[8]) = _nsCount;
-        Unsafe.As<byte, ushort>(ref buffer[10]) = _arCount;
+    public readonly void WriteTo(Span<byte> destination)
+    {
+        Unsafe.As<byte, ushort>(ref destination[0]) = _id;
+        Unsafe.As<byte, byte>(ref destination[2]) = _flag0;
+        Unsafe.As<byte, byte>(ref destination[3]) = _flag1;
+        Unsafe.As<byte, ushort>(ref destination[4]) = _qdCount;
+        Unsafe.As<byte, ushort>(ref destination[6]) = _anCount;
+        Unsafe.As<byte, ushort>(ref destination[8]) = _nsCount;
+        Unsafe.As<byte, ushort>(ref destination[10]) = _arCount;
 
-        ConvertEndianness(ref buffer);
-
-        return buffer.ToArray();
+        ConvertEndianness(ref destination);
     }
 
     private static void ConvertEndianness(ref Span<byte> bytes)
@@ -70,7 +72,7 @@ public struct Header
         if (!BitConverter.IsLittleEndian) return;
 
         // Manual endian conversion
-        bytes.Slice(0, sizeof(ushort)).Reverse();
+        bytes[..sizeof(ushort)].Reverse();
         bytes.Slice(2, sizeof(byte)).Reverse();
         bytes.Slice(3, sizeof(byte)).Reverse();
         bytes.Slice(4, sizeof(ushort)).Reverse();
