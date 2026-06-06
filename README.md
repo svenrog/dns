@@ -1,12 +1,10 @@
 ﻿# DNS
 
-A DNS library written in C# targeting .NET Standard 2.0. Versions prior to version two (2.0.0) were written for .NET 4 using blocking network operations. Version two and above use asynchronous operations.
+A DNS library written in C# targeting .NET 9 and .NET 10. Versions prior to version two (2.0.0) were written for .NET 4 using blocking network operations. Version two and above use asynchronous operations.
 
 Available through NuGet.
 
 	Install-Package DNS
-
-[![Test](https://github.com/kapetan/dns/actions/workflows/test.yml/badge.svg)](https://github.com/kapetan/dns/actions/workflows/test.yml)
 
 # Usage
 
