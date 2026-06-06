@@ -84,7 +84,14 @@ public class Question : IMessageEntry
 
     public byte[] ToArray()
     {
-        ByteArrayBuilder builder = new(Size);
+        byte[] result = new byte[Size];
+        WriteTo(result);
+        return result;
+    }
+
+    public void WriteTo(Span<byte> destination)
+    {
+        _domain.WriteTo(destination);
 
         Tail tail = new()
         {
@@ -92,11 +99,7 @@ public class Question : IMessageEntry
             Class = Class
         };
 
-        builder
-            .Append(_domain.ToArray())
-            .Append(tail.ToArray());
-
-        return builder.Build();
+        tail.WriteTo(destination.Slice(_domain.Size));
     }
 
     public override string ToString()
@@ -125,16 +128,12 @@ public class Question : IMessageEntry
             return MemoryMarshal.Read<Tail>(tail);
         }
 
-        public readonly byte[] ToArray()
+        public readonly void WriteTo(Span<byte> destination)
         {
-            Span<byte> span = stackalloc byte[SIZE];
+            Unsafe.As<byte, ushort>(ref destination[0]) = _type;
+            Unsafe.As<byte, ushort>(ref destination[2]) = _class;
 
-            Unsafe.As<byte, ushort>(ref span[0]) = _type;
-            Unsafe.As<byte, ushort>(ref span[2]) = _class;
-
-            ConvertEndianness(ref span);
-
-            return span.ToArray();
+            ConvertEndianness(ref destination);
         }
 
         private static void ConvertEndianness(ref Span<byte> bytes)
