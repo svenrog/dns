@@ -8,7 +8,7 @@ A DNS library in C#: message parsing/serialization plus a small DNS client and p
 
 ## Build & test
 
-- Multi-targeted: `DNS`, `Tests`, and `DNS.Benchmark` build for both `net9.0` and `net10.0`. Build the whole solution with `dotnet build DNS.sln`.
+- Multi-targeted: `DNS`, `Tests`, and `DNS.Benchmark` build for both `net9.0` and `net10.0`. Build the whole solution with `dotnet build DNS.slnx`.
 - Tests use **xUnit**: `dotnet test Tests`. Run a single test with `dotnet test Tests --filter "FullyQualifiedName~TestName"`.
 - Benchmarks (BenchmarkDotNet) run in Release: `dotnet run -c Release --project DNS.Benchmark`.
 

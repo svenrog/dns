@@ -1,0 +1,23 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution artifacts/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="CLAUDE.md" />
+    <File Path="LICENSE.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Source/">
+    <Project Path="src/DNS/DNS.csproj" />
+    <Project Path="src/Examples/Examples.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/DNS.Benchmark.Baseline/DNS.Benchmark.Baseline.csproj" />
+    <Project Path="tests/DNS.Benchmark/DNS.Benchmark.csproj" />
+    <Project Path="tests/DNS.Tests/DNS.Tests.csproj" />
+  </Folder>
+</Solution>
